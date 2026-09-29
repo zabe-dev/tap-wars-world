@@ -13,7 +13,8 @@ import Link from "next/link";
 type Place = [city: string, country: string];
 type Toast = { id: number; place: Place; mine: boolean; dx: number; dy: number };
 type RankingEntry = { country: string; count: number };
-type Movement = { country: string; delta: number } | null;
+type AddedTaps = { country: string; amount: number } | null;
+type Settlement = { country: string; total: number; consumed: number } | null;
 type TapEvent = { id: number; country: string } | null;
 const initialCounts: Record<string, number> = {};
 
@@ -34,8 +35,9 @@ export function Counter() {
 	const [battleParticipants, setBattleParticipants] = useState<[string, string] | null>(null);
 	const [pendingRanking, setPendingRanking] = useState<RankingEntry[] | null>(null);
 	const [pendingTotal, setPendingTotal] = useState(0);
-	const [pendingMovement, setPendingMovement] = useState<Movement>(null);
-	const [movement, setMovement] = useState<Movement>(null);
+	const [addedTaps, setAddedTaps] = useState<AddedTaps>(null);
+	const [settlement, setSettlement] = useState<Settlement>(null);
+	const [battleSettling, setBattleSettling] = useState(false);
 	const [rankingLoading, setRankingLoading] = useState(true);
 	const [rings, setRings] = useState<number[]>([]);
 	const audio = useRef<AudioContext | null>(null);
@@ -65,6 +67,7 @@ export function Counter() {
 	}
 
 	async function tap() {
+		if (battleSettling) return;
 		setTapError(null);
 		if (!muted) beep();
 		const ringId = Date.now() + Math.random();
@@ -87,14 +90,9 @@ export function Counter() {
 			}
 			const nextCounts = toCounts(data.ranking);
 			const country = countryCode(data.country);
-			const previousRank = getTopCountries(sorted).findIndex(([code]) => code === country);
-			const nextSorted = Object.entries(nextCounts).sort((a, b) => b[1] - a[1]);
-			const nextRank = getTopCountries(nextSorted).findIndex(([code]) => code === country);
-			const nextMovement = { country, delta: previousRank >= 0 && nextRank >= 0 ? previousRank - nextRank : 0 };
 			if (battleActive) {
 				setPendingRanking(data.ranking);
 				setPendingTotal(totalFor(data.ranking));
-				setPendingMovement(nextMovement);
 				const visibleRanking = data.ranking.map((entry) => {
 					const code = countryCode(entry.country);
 					if (!battleParticipants?.includes(code)) return entry;
@@ -103,8 +101,6 @@ export function Counter() {
 				setCounts(toCounts(visibleRanking));
 				setTotal(totalFor(visibleRanking));
 			} else {
-				setMovement(nextMovement);
-				window.setTimeout(() => setMovement(null), 1400);
 				setCounts(nextCounts);
 				setTotal(totalFor(data.ranking));
 			}
@@ -138,7 +134,6 @@ export function Counter() {
 			<HeaderControls muted={muted} onToggleSound={() => setMuted((value) => !value)} />
 			<div className={styles.content}>
 				<section className={styles.hero}>
-					<p className={styles.eyebrow}>ONE SHARED MOMENT</p>
 					<div className={styles.count} aria-live="polite" aria-busy={rankingLoading}>
 						{rankingLoading ? <LoadingDots label="Loading total taps" /> : <span title={total.toLocaleString("en-US")}>{total.toLocaleString("en-US")}</span>}
 					</div>
@@ -159,24 +154,45 @@ export function Counter() {
 						TAP
 					</button>
 				</div>
-				{tapError && (
-					<p className={styles.error} role="alert">
-						{tapError}
-					</p>
-				)}
+				<p className={`${styles.error} ${tapError ? styles.errorVisible : ""}`} role="alert" aria-live="polite">
+					{tapError ?? " "}
+				</p>
 				{!rankingLoading && <CountryMission ranking={sorted} visitorCountry={visitorCountry} tapEvent={tapEvent} onBattleStart={(participants, frozen) => {
 					setBattleActive(true); setBattleParticipants(participants);
 					const visibleRanking = sorted.map((entry) => { const code = countryCode(entry[0]); return participants.includes(code) ? [entry[0], frozen[code] ?? entry[1]] as [string, number] : entry; });
 					const visibleEntries = visibleRanking.map(([country, count]) => ({ country, count }));
 					setCounts(toCounts(visibleEntries)); setTotal(totalFor(visibleEntries));
-				}} onBattleComplete={() => {
-					if (pendingRanking) setCounts(toCounts(pendingRanking));
-					if (pendingRanking) setTotal(pendingTotal);
-					if (pendingMovement) { setMovement(pendingMovement); window.setTimeout(() => setMovement(null), 1400); }
-					setPendingRanking(null); setPendingMovement(null); setBattleActive(false); setBattleParticipants(null);
+				}} onBattleComplete={async () => {
+					if (!pendingRanking || !battleParticipants) {
+						setBattleActive(false); setBattleParticipants(null);
+						return;
+					}
+					setBattleSettling(true);
+					const finalCounts = toCounts(pendingRanking);
+					const added = battleParticipants
+						.map((country) => ({ country, amount: Math.max(0, (finalCounts[country] ?? 0) - (counts[country] ?? 0)) }))
+						.filter((entry) => entry.amount > 0)
+						.sort((a, b) => b.amount - a.amount)[0] ?? null;
+					if (added) {
+						setAddedTaps(added);
+						setSettlement({ country: added.country, total: added.amount, consumed: 0 });
+						const stepDelay = process.env.NODE_ENV === "development" ? 100 : 45;
+						for (let consumed = 1; consumed <= added.amount; consumed += 1) {
+							await new Promise((resolve) => window.setTimeout(resolve, stepDelay));
+							setSettlement({ country: added.country, total: added.amount, consumed });
+						}
+					}
+					setCounts(finalCounts);
+					setTotal(pendingTotal);
+					setAddedTaps(null);
+					setSettlement(null);
+					setPendingRanking(null);
+					setBattleActive(false);
+					setBattleParticipants(null);
+					setBattleSettling(false);
 				}} />}
-				<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={battleActive ? null : highlightCountry} movement={movement} />
-				<footer className={styles.footer}><nav><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></nav></footer>
+				<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={battleActive ? null : highlightCountry} addedTaps={addedTaps} settlement={settlement} />
+				<footer className={styles.footer}><span>© 2026 Tap King World</span><nav><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></nav></footer>
 			</div>
 		</main>
 	);

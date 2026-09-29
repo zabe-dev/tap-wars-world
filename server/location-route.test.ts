@@ -52,6 +52,16 @@ test("invalid browser input cannot change the ranking", async () => {
   expect(await (await app.request("/api/ranking")).json()).toEqual(before);
 });
 
+test("tap rejects cross-site browser requests", async () => {
+	const before = await (await app.request("/api/ranking")).json();
+	const response = await app.request("/api/tap", {
+		method: "POST",
+		headers: { origin: "https://attacker.example" },
+	});
+	expect(response.status).toBe(403);
+	expect(await (await app.request("/api/ranking")).json()).toEqual(before);
+});
+
 test("trusted proxy location takes priority over browser fallback", async () => {
   process.env.TRUSTED_PROXY_HOPS = "1";
   const response = await app.request("/api/location", {

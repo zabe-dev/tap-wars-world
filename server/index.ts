@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { getRanking, recordTap } from "./counter-store";
-import { getVisitorLocation, resolveLocation } from "./location";
+import { getVisitorLocation, resolveLocation, visitorIp } from "./location";
 import { z } from "zod";
 import { scoreTap } from "./tap-guard";
 
@@ -19,15 +19,25 @@ app.post("/location", async (context) => {
 });
 
 app.post("/tap", async (context) => {
-  const body = await context.req.text();
+	const origin = context.req.header("origin");
+	if (origin && origin !== new URL(context.req.url).origin) {
+		return context.json({ error: { code: "INVALID_ORIGIN", message: "Tap requests must come from this site." } }, 403);
+	}
+	const contentLength = Number(context.req.header("content-length") ?? 0);
+	if (contentLength > 2048) return context.json({ error: { code: "PAYLOAD_TOO_LARGE", message: "Tap payload is too large." } }, 413);
+	const body = await context.req.text();
+	if (body.length > 2048) return context.json({ error: { code: "PAYLOAD_TOO_LARGE", message: "Tap payload is too large." } }, 413);
   let raw: unknown = {};
   try { if (body) raw = JSON.parse(body); } catch { raw = null; }
   const input = locationInput.safeParse(raw);
-  if (!input.success) return context.json({ error: { code: "INVALID_LOCATION", message: "Invalid IP address." } }, 400);
-  const location = resolveLocation(context.req.raw.headers, input.data.ip);
-  const key = input.data.ip ?? "anonymous";
-  const score = scoreTap(key);
-  return context.json({ ...location, ...score, accepted: score.points > 0, ranking: recordTap(location.country, score.points) });
+	if (!input.success) return context.json({ error: { code: "INVALID_LOCATION", message: "Invalid IP address." } }, 400);
+	const location = resolveLocation(context.req.raw.headers, input.data.ip);
+	// When running behind a configured proxy, rate-limit the server-observed address;
+	// never let a browser choose a new limiter key by changing its JSON payload.
+	const key = visitorIp(context.req.raw.headers, Number(process.env.TRUSTED_PROXY_HOPS ?? 0)) ?? input.data.ip ?? "anonymous";
+	const score = scoreTap(key);
+	const accepted = score.points === 1;
+	return context.json({ ...location, ...score, accepted, ranking: recordTap(location.country, accepted ? 1 : 0) });
 });
 
 export default app;

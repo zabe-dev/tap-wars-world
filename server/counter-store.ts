@@ -10,7 +10,7 @@ const counts = new Map<string, number>([
 	["Germany", 106],
 	["Canada", 105],
 	["Singapore", 104],
-	["Philippines", 101],
+	["Philippines", 90],
 	["South Korea", 102],
 	["India", 101],
 	["Mexico", 100],

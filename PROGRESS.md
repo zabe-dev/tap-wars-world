@@ -1,3 +1,16 @@
+## 2026-09-30 — Tap endpoint hardening
+
+- [x] Reject cross-origin browser tap requests and oversized payloads
+- [x] Ignore client-selected rate-limit identities behind a trusted proxy
+- [x] Keep accepted tap points server-controlled at exactly one
+
+## 2026-09-30 — Battle tap settlement animation
+
+- [x] Replace green rank arrows with an added-taps indicator
+- [x] Animate added taps into the frozen ranking score
+- [x] Commit battle ranking totals only after the consume animation finishes
+- [x] Include 11th place as a valid challenger for the visible 10th-place country
+
 ## 2026-09-30 — Competitive ranking loop
 
 - [x] Add country missions with milestone progress bars
