@@ -1,0 +1,62 @@
+import { afterEach, expect, test } from "bun:test";
+import app from "./index";
+
+const originalHops = process.env.TRUSTED_PROXY_HOPS;
+afterEach(() => {
+  if (originalHops === undefined) delete process.env.TRUSTED_PROXY_HOPS;
+  else process.env.TRUSTED_PROXY_HOPS = originalHops;
+});
+
+test("tap uses proxy IP and merges into the existing country ranking", async () => {
+  process.env.TRUSTED_PROXY_HOPS = "1";
+  const before = await (await app.request("/api/ranking")).json();
+  const previous = before.ranking.find((entry: { country: string }) => entry.country === "United States").count;
+  const response = await app.request("/api/tap", {
+    method: "POST",
+    headers: { "x-forwarded-for": "8.8.8.8", "x-vercel-ip-country": "PH" },
+  });
+  const data = await response.json();
+  expect(response.status).toBe(200);
+  expect(data.country).toBe("United States");
+  expect(data.ranking.find((entry: { country: string }) => entry.country === data.country).count).toBe(previous + 1);
+});
+
+test("tap still counts without a location", async () => {
+  process.env.TRUSTED_PROXY_HOPS = "1";
+  const response = await app.request("/api/tap", { method: "POST" });
+  const data = await response.json();
+  expect(response.status).toBe(200);
+  expect(data.city).toBe("Location unknown");
+  expect(data.ranking.some((entry: { country: string }) => entry.country === "Worldwide")).toBe(true);
+});
+
+test("localhost public-IP fallback increments the actual resolved country", async () => {
+  process.env.TRUSTED_PROXY_HOPS = "0";
+  const body = JSON.stringify({ ip: "8.8.8.8" });
+  const options = { method: "POST", headers: { "Content-Type": "application/json" }, body };
+  const location = await (await app.request("/api/location", options)).json();
+  expect(location.country).toBe("United States");
+  const before = await (await app.request("/api/ranking")).json();
+  const previous = before.ranking.find((entry: { country: string }) => entry.country === location.country).count;
+  const taped = await (await app.request("/api/tap", options)).json();
+  expect(taped.country).toBe(location.country);
+  expect(taped.ranking.find((entry: { country: string }) => entry.country === location.country).count).toBe(previous + 1);
+});
+
+test("invalid browser input cannot change the ranking", async () => {
+  const before = await (await app.request("/api/ranking")).json();
+  for (const body of ['{"ip":"invalid"}', '{"country":"Philippines"}', "{"]) {
+    const response = await app.request("/api/tap", { method: "POST", body });
+    expect(response.status).toBe(400);
+  }
+  expect(await (await app.request("/api/ranking")).json()).toEqual(before);
+});
+
+test("trusted proxy location takes priority over browser fallback", async () => {
+  process.env.TRUSTED_PROXY_HOPS = "1";
+  const response = await app.request("/api/location", {
+    method: "POST", headers: { "x-forwarded-for": "8.8.8.8" },
+    body: JSON.stringify({ ip: "127.0.0.1" }),
+  });
+  expect((await response.json()).country).toBe("United States");
+});

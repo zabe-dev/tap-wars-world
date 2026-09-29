@@ -1,0 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&display=swap');
+
+:root { --bg: #f3efff; --card: #fff; --ink: #1b1340; --mute: #6b628f; --bar: #e4dcfb; --fill: #7c5cff; --btn: #ff3d8b; --btn-ink: #fff; --btn-edge: #b8125c; --pill: #1b1340; --pill-ink: #fff; --chip: #ffd23f; --hot: #ff3d8b; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #150f33; --card: #231a52; --ink: #f3efff; --mute: #a99fd6; --bar: #2e2470; --fill: #8f74ff; --btn-edge: #a30e52; --pill: #f3efff; --pill-ink: #150f33; color-scheme: dark; } }
+* { box-sizing: border-box; } html { scroll-padding-top: env(safe-area-inset-top, 0px); background: var(--bg); } body { margin: 0; min-height: 100vh; overflow-x: hidden; background: var(--bg); color: var(--ink); font: 500 16px Nunito, system-ui, sans-serif; } button { font: inherit; }
+
+:root[data-theme="dark"] { --bg: #150f33; --card: #231a52; --ink: #f3efff; --mute: #a99fd6; --bar: #2e2470; --fill: #8f74ff; --btn-edge: #a30e52; --pill: #f3efff; --pill-ink: #150f33; color-scheme: dark; }

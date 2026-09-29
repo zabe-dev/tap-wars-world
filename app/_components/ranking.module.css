@@ -1,0 +1,27 @@
+/* CSS Modules are the existing styling approach for this page. */
+.board { margin-bottom: 44px; }
+.header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.header h2 { margin: 0; font-size: 22px; letter-spacing: -.03em; }
+.header > span { color: var(--mute); font-size: 12px; }
+.list { display: grid; gap: 0 24px; margin: 0; padding: 8px 20px; list-style: none; border-radius: 18px; background: var(--card); }
+.list.loading { height: 576px; }
+.list li { min-width: 0; min-height: 56px; border-bottom: 1px solid var(--bar); }
+.entry { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 55px; }
+.list li:last-child { border-bottom: 0; }
+.rank { width: 20px; flex: none; color: var(--mute); font-size: 12px; font-variant-numeric: tabular-nums; }
+.movement { width: 20px; flex: none; margin-left: -8px; font-size: 11px; font-weight: 800; animation: movement-in .35s ease-out; }.up { color: #16a36a; }.down { color: var(--hot); }
+@keyframes movement-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+.flag { font-size: 22px; line-height: 1; }
+.name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 700; }
+.score { flex: none; font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; }
+.scoreFlash { animation: score-flash .7s ease-out; }
+@keyframes score-flash { 0%, 100% { color: var(--ink); } 20% { color: var(--hot); text-shadow: 0 0 12px color-mix(in srgb, var(--hot) 65%, transparent); } 60% { color: var(--hot); } }
+@media (prefers-reduced-motion: reduce) { .scoreFlash { animation: none; color: var(--hot); } }
+.empty { color: var(--mute); font-size: 13px; }
+.loadingRow { display: grid; grid-column: 1 / -1; height: 100%; place-items: center; border-bottom: 0; color: var(--mute); }
+@media (min-width: 700px) {
+  .list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .list.loading { height: 296px; }
+  .list li:nth-last-child(2) { border-bottom: 0; }
+  .loadingRow { min-height: 280px; }
+}
