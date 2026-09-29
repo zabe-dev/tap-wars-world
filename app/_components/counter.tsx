@@ -37,7 +37,9 @@ export function Counter() {
 	const [pendingTotal, setPendingTotal] = useState(0);
 	const [addedTaps, setAddedTaps] = useState<AddedTaps>(null);
 	const [settlement, setSettlement] = useState<Settlement>(null);
-	const [battleSettling, setBattleSettling] = useState(false);
+	const [settlementOrder, setSettlementOrder] = useState<string[] | null>(null);
+	const pendingRankingRef = useRef<RankingEntry[] | null>(null);
+	const pendingTotalRef = useRef(0);
 	const [rankingLoading, setRankingLoading] = useState(true);
 	const [rings, setRings] = useState<number[]>([]);
 	const audio = useRef<AudioContext | null>(null);
@@ -67,7 +69,6 @@ export function Counter() {
 	}
 
 	async function tap() {
-		if (battleSettling) return;
 		setTapError(null);
 		if (!muted) beep();
 		const ringId = Date.now() + Math.random();
@@ -92,7 +93,9 @@ export function Counter() {
 			const country = countryCode(data.country);
 			if (battleActive) {
 				setPendingRanking(data.ranking);
+				pendingRankingRef.current = data.ranking;
 				setPendingTotal(totalFor(data.ranking));
+				pendingTotalRef.current = totalFor(data.ranking);
 				const visibleRanking = data.ranking.map((entry) => {
 					const code = countryCode(entry.country);
 					if (!battleParticipants?.includes(code)) return entry;
@@ -167,12 +170,16 @@ export function Counter() {
 						setBattleActive(false); setBattleParticipants(null);
 						return;
 					}
-					setBattleSettling(true);
-					const finalCounts = toCounts(pendingRanking);
+					const settlementRanking = pendingRankingRef.current ?? pendingRanking;
+					if (!settlementRanking) return;
+					const finalCounts = toCounts(settlementRanking);
 					const added = battleParticipants
 						.map((country) => ({ country, amount: Math.max(0, (finalCounts[country] ?? 0) - (counts[country] ?? 0)) }))
 						.filter((entry) => entry.amount > 0)
 						.sort((a, b) => b.amount - a.amount)[0] ?? null;
+					const finalOrder = getTopCountries(Object.entries(finalCounts).sort((a, b) => b[1] - a[1])).map(([country]) => country);
+					setSettlementOrder(finalOrder);
+					await new Promise((resolve) => window.setTimeout(resolve, 600));
 					if (added) {
 						setAddedTaps(added);
 						setSettlement({ country: added.country, total: added.amount, consumed: 0 });
@@ -182,16 +189,19 @@ export function Counter() {
 							setSettlement({ country: added.country, total: added.amount, consumed });
 						}
 					}
-					setCounts(finalCounts);
-					setTotal(pendingTotal);
+					const latestRanking = pendingRankingRef.current ?? settlementRanking;
+					setCounts(toCounts(latestRanking));
+					setTotal(pendingTotalRef.current || pendingTotal);
 					setAddedTaps(null);
 					setSettlement(null);
+					setSettlementOrder(null);
 					setPendingRanking(null);
+					pendingRankingRef.current = null;
+					pendingTotalRef.current = 0;
 					setBattleActive(false);
 					setBattleParticipants(null);
-					setBattleSettling(false);
 				}} />}
-				<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={battleActive ? null : highlightCountry} addedTaps={addedTaps} settlement={settlement} />
+				<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={battleActive ? null : highlightCountry} addedTaps={addedTaps} settlement={settlement} order={settlementOrder} />
 				<footer className={styles.footer}><span>© 2026 Tap King World</span><nav><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></nav></footer>
 			</div>
 		</main>

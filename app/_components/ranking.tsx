@@ -5,9 +5,10 @@ import { countryName, flag, formatCount, getTopCountries } from "./countries";
 import styles from "./ranking.module.css";
 import { LoadingDots } from "./loading-dots";
 
-export function Ranking({ ranking, loading, highlightedCountry, addedTaps, settlement }: { ranking: [string, number][]; loading: boolean; highlightedCountry?: string | null; addedTaps?: { country: string; amount: number } | null; settlement?: { country: string; total: number; consumed: number } | null }) {
+export function Ranking({ ranking, loading, highlightedCountry, addedTaps, settlement, order }: { ranking: [string, number][]; loading: boolean; highlightedCountry?: string | null; addedTaps?: { country: string; amount: number } | null; settlement?: { country: string; total: number; consumed: number } | null; order?: string[] | null }) {
   const reduced = useReducedMotion();
-  const countries = getTopCountries(ranking);
+  const rankingMap = new Map(ranking);
+  const countries = order ? order.map((country) => [country, rankingMap.get(country) ?? 0] as [string, number]) : getTopCountries(ranking);
   return (
     <section className={styles.board} aria-labelledby="ranking-title">
       <header className={styles.header}>
