@@ -4,6 +4,15 @@ Install with `bun install`, then run `bun run dev`.
 Run checks with `bun test` and `bun run build`. Start production with `bun run start`.
 Use Node.js 24+ if running Next.js through Node; the GeoIP package requires it.
 
+## Dokploy environment
+
+Copy `.env.example` into Dokploy's environment settings and replace the
+placeholders with secrets from your PostgreSQL service. Set `DATABASE_URL` to
+the connection string supplied by that service, keep `PORT=3000`, and set
+`TRUSTED_PROXY_HOPS=1` when traffic reaches the app through Dokploy's Traefik
+proxy. The current counter store is still in memory, so `DATABASE_URL` is
+prepared for the PostgreSQL migration but is not read by the counter yet.
+
 Open `/?loading=1` to preview the animated data-loading skeletons for two seconds.
 
 ## Dokploy location detection
