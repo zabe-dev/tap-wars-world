@@ -8,9 +8,10 @@ FROM oven/bun:1 AS builder
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY package.json bun.lock next.config.ts tsconfig.json ./
+COPY package.json bun.lock next.config.ts tsconfig.json drizzle.config.ts ./
 COPY app ./app
 COPY server ./server
+COPY drizzle ./drizzle
 
 RUN bun run build
 
@@ -22,6 +23,8 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/next.config.ts ./next.config.ts
+COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=builder /app/drizzle ./drizzle
 
 EXPOSE 3000
 CMD ["bun", "run", "start"]

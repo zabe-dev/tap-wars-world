@@ -10,8 +10,8 @@ Copy `.env.example` into Dokploy's environment settings and replace the
 placeholders with secrets from your PostgreSQL service. Set `DATABASE_URL` to
 the connection string supplied by that service, keep `PORT=3000`, and set
 `TRUSTED_PROXY_HOPS=1` when traffic reaches the app through Dokploy's Traefik
-proxy. The current counter store is still in memory, so `DATABASE_URL` is
-prepared for the PostgreSQL migration but is not read by the counter yet.
+proxy. The production start command runs the Drizzle migration before Next.js
+starts, so a new database gets its tables automatically.
 
 Open `/?loading=1` to preview the animated data-loading skeletons for two seconds.
 
@@ -66,8 +66,9 @@ set `GEODATADIR` to the same absolute directory in the update job and app.
 Keep the GeoIP package and its data directory in the runtime image. The current
 build uses normal `next start`, not a trimmed standalone image.
 
-## Current counter limitation
+## Counter storage
 
-The ranking store still contains seeded demonstration totals and lives in process
-memory. It resets on restart and is not shared between replicas. PostgreSQL
-persistence remains unfinished; location detection does not change this.
+When `DATABASE_URL` is configured, country totals are stored in PostgreSQL and
+incremented atomically. The first start applies the Drizzle migration and seeds
+the initial demonstration totals only when the table is empty. Without a
+database URL, local development falls back to the in-memory store.

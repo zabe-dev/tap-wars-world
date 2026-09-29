@@ -1,12 +1,12 @@
 import { Hono } from "hono";
-import { getRanking, recordTap } from "./counter-store";
+import { getStoredRanking, recordStoredTap } from "./counter-store";
 import { getVisitorLocation, resolveLocation, visitorIp } from "./location";
 import { z } from "zod";
 import { scoreTap } from "./tap-guard";
 
 const app = new Hono().basePath("/api");
 
-app.get("/ranking", (context) => context.json({ ranking: getRanking() }));
+app.get("/ranking", async (context) => context.json({ ranking: await getStoredRanking() }));
 
 const locationInput = z.object({ ip: z.union([z.ipv4(), z.ipv6()]).optional() }).strict();
 
@@ -37,7 +37,7 @@ app.post("/tap", async (context) => {
 	const key = visitorIp(context.req.raw.headers, Number(process.env.TRUSTED_PROXY_HOPS ?? 0)) ?? input.data.ip ?? "anonymous";
 	const score = scoreTap(key);
 	const accepted = score.points === 1;
-	return context.json({ ...location, ...score, accepted, ranking: recordTap(location.country, accepted ? 1 : 0) });
+	return context.json({ ...location, ...score, accepted, ranking: await recordStoredTap(location.country, accepted ? 1 : 0) });
 });
 
 export default app;
