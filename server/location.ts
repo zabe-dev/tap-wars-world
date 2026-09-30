@@ -10,6 +10,11 @@ const locationSchema = z.object({
 const UNKNOWN = { country: "Worldwide", city: "Location unknown" };
 const regions = new Intl.DisplayNames(["en"], { type: "region" });
 
+function hasUsableCity(city: string) {
+  const normalized = city.trim().toLowerCase();
+  return normalized.length > 0 && !["unknown", "n/a", "na", "-"].includes(normalized);
+}
+
 /** Select the visitor from the right of a trusted proxy chain; zero disables headers. */
 export function visitorIp(headers: Headers, hops: number): string | null {
   if (!Number.isInteger(hops) || hops < 1 || hops > 10) return null;
@@ -50,7 +55,7 @@ export function lookupLocation(ip: string | null) {
 /** Prefer the trusted proxy, falling back to the browser's public-IP discovery. */
 export function resolveLocation(headers: Headers, browserIp?: string) {
   const location = getVisitorLocation(headers);
-  if (location.country !== "Worldwide" && location.city.trim()) return location;
+  if (location.country !== "Worldwide" && hasUsableCity(location.city)) return location;
   const browserLocation = lookupLocation(browserIp ?? null);
   return browserLocation.country !== "Worldwide" ? browserLocation : location;
 }
