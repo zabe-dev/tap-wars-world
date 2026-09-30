@@ -111,7 +111,7 @@ export function Counter() {
 		const id = Date.now() + Math.random();
 		setToasts((value) => [
 			...value.slice(-3),
-			{ id, place, mine, dx: (Math.random() - 0.5) * 190, dy: -(85 + Math.random() * 75) },
+			{ id, place, mine, dx: (Math.random() - 0.5) * 300, dy: -(110 + Math.random() * 110) },
 		]);
 		setTimeout(() => setToasts((value) => value.filter((toast) => toast.id !== id)), 2300);
 	}
