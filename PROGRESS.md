@@ -1,3 +1,9 @@
+## 2026-09-30 — UTC world ranking header
+
+- [x] Rename the leaderboard heading to World Ranking
+- [x] Show the current UTC date and time in the ranking header
+- [x] Keep server-recorded timestamps in UTC ISO format
+
 ## 2026-09-30 — Shared country battles
 
 - [x] Persist one active battle and its frozen ranking values in PostgreSQL
