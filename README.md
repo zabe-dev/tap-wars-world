@@ -1,4 +1,4 @@
-# World Counter
+# tapwars.world
 
 Install with `bun install`, then run `bun run dev`.
 Run checks with `bun test` and `bun run build`. Start production with `bun run start`.
@@ -69,6 +69,6 @@ build uses normal `next start`, not a trimmed standalone image.
 ## Counter storage
 
 When `DATABASE_URL` is configured, country totals are stored in PostgreSQL and
-incremented atomically. The first start applies the Drizzle migration and seeds
-the initial demonstration totals only when the table is empty. Without a
-database URL, local development falls back to the in-memory store.
+incremented atomically. The first start applies the Drizzle migration; a fresh
+database starts with no country totals. Without a database URL, local
+development falls back to an empty in-memory store.

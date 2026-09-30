@@ -152,7 +152,7 @@ export function Counter() {
 					<button
 						className={styles.button}
 						onClick={tap}
-						aria-label="Add your tap to the world counter"
+						aria-label="Add your tap to tapwars.world"
 					>
 						TAP
 					</button>
@@ -202,7 +202,7 @@ export function Counter() {
 					setBattleParticipants(null);
 				}} />}
 				<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={battleActive ? null : highlightCountry} addedTaps={addedTaps} settlement={settlement} order={settlementOrder} />
-				<footer className={styles.footer}><span>© 2026 Tap King World</span><nav><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></nav></footer>
+				<footer className={styles.footer}><span>© 2026 tapwars.world</span><nav><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></nav></footer>
 			</div>
 		</main>
 	);

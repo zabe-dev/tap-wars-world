@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "World Counter",
+  title: "tapwars.world",
   description: "One tap from every corner of the world.",
 };
 

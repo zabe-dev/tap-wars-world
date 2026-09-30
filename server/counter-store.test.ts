@@ -3,9 +3,11 @@ import { getRanking, recordTap } from "./counter-store";
 
 describe("counter store", () => {
   test("returns ranking sorted by count", () => {
+    recordTap(`Sort A ${Date.now()}`, 2);
+    recordTap(`Sort B ${Date.now()}`, 1);
     const ranking = getRanking();
 
-    expect(ranking.length).toBeGreaterThan(1);
+    expect(ranking.length).toBeGreaterThanOrEqual(2);
     for (let index = 1; index < ranking.length; index++) {
       expect(ranking[index - 1].count).toBeGreaterThanOrEqual(ranking[index].count);
     }

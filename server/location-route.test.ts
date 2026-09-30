@@ -10,7 +10,7 @@ afterEach(() => {
 test("tap uses proxy IP and merges into the existing country ranking", async () => {
   process.env.TRUSTED_PROXY_HOPS = "1";
   const before = await (await app.request("/api/ranking")).json();
-  const previous = before.ranking.find((entry: { country: string }) => entry.country === "United States").count;
+	const previous = before.ranking.find((entry: { country: string }) => entry.country === "United States")?.count ?? 0;
   const response = await app.request("/api/tap", {
     method: "POST",
     headers: { "x-forwarded-for": "8.8.8.8", "x-vercel-ip-country": "PH" },
@@ -37,7 +37,7 @@ test("localhost public-IP fallback increments the actual resolved country", asyn
   const location = await (await app.request("/api/location", options)).json();
   expect(location.country).toBe("United States");
   const before = await (await app.request("/api/ranking")).json();
-  const previous = before.ranking.find((entry: { country: string }) => entry.country === location.country).count;
+	const previous = before.ranking.find((entry: { country: string }) => entry.country === location.country)?.count ?? 0;
   const taped = await (await app.request("/api/tap", options)).json();
   expect(taped.country).toBe(location.country);
   expect(taped.ranking.find((entry: { country: string }) => entry.country === location.country).count).toBe(previous + 1);
