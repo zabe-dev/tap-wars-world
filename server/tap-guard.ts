@@ -18,6 +18,7 @@ export function scoreTap(key: string, now = Date.now()): TapScore {
     attempts.set(key, recent);
     return { points: 0, retryAfter: Math.ceil((LONG_WINDOW_MS - (now - recent[0])) / 1000) };
   }
+  if (recent.length === 0) attempts.delete(key);
   recent.push(now);
   attempts.set(key, recent);
   return { points: 1, retryAfter: 0 };

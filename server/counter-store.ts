@@ -45,7 +45,10 @@ async function ensureDatabase(database: NonNullable<typeof db>) {
 
 /** Read durable totals when PostgreSQL is configured, otherwise use the local fallback. */
 export async function getStoredRanking(): Promise<RankingEntry[]> {
-	if (!db) return getRanking();
+	if (!db) {
+		if (process.env.NODE_ENV === "production") throw new Error("DATABASE_URL is required in production.");
+		return getRanking();
+	}
 	try {
 		await ensureDatabase(db);
 		const rows = await db.select().from(countryCounts)
@@ -59,7 +62,10 @@ export async function getStoredRanking(): Promise<RankingEntry[]> {
 
 /** Atomically add accepted taps to a country and return durable totals. */
 export async function recordStoredTap(country: string, points = 1): Promise<RankingEntry[]> {
-	if (!db) return recordTap(country, points);
+	if (!db) {
+		if (process.env.NODE_ENV === "production") throw new Error("DATABASE_URL is required in production.");
+		return recordTap(country, points);
+	}
 	try {
 		await ensureDatabase(db);
 		if (points > 0) {

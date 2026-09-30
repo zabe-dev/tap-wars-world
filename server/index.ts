@@ -5,6 +5,8 @@ import { z } from "zod";
 import { scoreTap } from "./tap-guard";
 import { listMilestones, recordMilestone } from "./milestones";
 import { getOrSetTapToken, validTapToken } from "./tap-token";
+import { publishActivity, subscribeActivity } from "./activity";
+import { streamSSE } from "hono/streaming";
 
 const app = new Hono().basePath("/api");
 
@@ -14,6 +16,16 @@ app.get("/ranking", async (context) => {
 });
 
 app.get("/milestones", async (context) => context.json({ milestones: await listMilestones() }));
+
+app.get("/activity/stream", (context) => streamSSE(context, async (stream) => {
+		await stream.writeSSE({ event: "ready", data: "{}" });
+		await new Promise<void>((resolve) => {
+			const unsubscribe = subscribeActivity((activity) => {
+				void stream.writeSSE({ event: "tap", data: JSON.stringify(activity) });
+			});
+			stream.onAbort(() => { unsubscribe(); resolve(); });
+		});
+	}));
 
 const locationInput = z.object({ ip: z.union([z.ipv4(), z.ipv6()]).optional() }).strict();
 
@@ -44,11 +56,13 @@ app.post("/tap", async (context) => {
 	const location = resolveLocation(context.req.raw.headers, input.data.ip);
 	// When running behind a configured proxy, rate-limit the server-observed address;
 	// never let a browser choose a new limiter key by changing its JSON payload.
-	const key = visitorIp(context.req.raw.headers, Number(process.env.TRUSTED_PROXY_HOPS ?? 0)) ?? input.data.ip ?? "anonymous";
+	const trustedIp = visitorIp(context.req.raw.headers, Number(process.env.TRUSTED_PROXY_HOPS ?? 0));
+	const key = trustedIp ?? `token:${context.req.header("x-tap-token")}`;
 	const score = scoreTap(key);
 	const accepted = score.points === 1;
 	const ranking = await recordStoredTap(location.country, accepted ? 1 : 0);
 	const milestone = accepted ? await recordMilestone(ranking) : null;
+	if (accepted) await publishActivity({ country: location.country, clientId: context.req.header("x-client-id") });
 	return context.json({ ...location, ...score, accepted, ranking, milestone });
 });
 

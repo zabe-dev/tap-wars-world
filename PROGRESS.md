@@ -1,3 +1,27 @@
+## 2026-09-30 — Cross-user tap activity
+
+- [x] Broadcast accepted taps with PostgreSQL LISTEN/NOTIFY
+- [x] Deliver activity events to browsers through an SSE stream
+- [x] Show same-country taps while keeping rings local to the tapping user
+
+## 2026-09-30 — Production milestone ladder
+
+- [x] Start production milestones at 10,000 total taps
+- [x] Add widening 100k–999,999,999 milestone targets
+- [x] Use the production ladder consistently across environments
+
+## 2026-09-30 — Milestone track UI
+
+- [x] Show the reached date from each milestone record
+- [x] Render ten milestone targets, including locked future targets
+- [x] Keep only achieved milestones clickable for top-10 snapshots
+
+## 2026-09-30 — Milestone presentation and tap feedback
+
+- [x] Label milestone cards with their recorded tap total
+- [x] Open each milestone into a top-10 snapshot modal
+- [x] Replace the tap cue with a layered, pitch-stepped browser sound
+
 ## 2026-09-30 — Tap milestones
 
 - [x] Save top-10 snapshots at recurring tap milestones

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { getStoredRanking } from "@/server/counter-store";
-import { countryCode, countryName, flag, formatCount } from "../_components/countries";
+import { RankingEntries } from "./ranking-entries";
 import styles from "./rankings.module.css";
 
 const PAGE_SIZE = 25;
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export const metadata = { title: "All rankings · tapwars.world" };
 
 export default async function RankingsPage({ searchParams }: { searchParams: Promise<{ page?: string | string[] }> }) {
@@ -16,9 +17,7 @@ export default async function RankingsPage({ searchParams }: { searchParams: Pro
 	return <main className={styles.page}><article className={styles.content}>
 		<Link className={styles.back} href="/">← Back to tapwars.world</Link>
 		<header className={styles.header}><div><h1>All country rankings</h1><p>Every recorded country total, ranked by taps.</p></div><span>{ranking.length} countries</span></header>
-		{entries.length === 0 ? <p className={styles.empty}>No country taps have been recorded yet.</p> : <ol className={styles.list} start={(page - 1) * PAGE_SIZE + 1}>
-			{entries.map((entry) => { const code = countryCode(entry.country); return <li key={entry.country}><span className={styles.rank}>{ranking.indexOf(entry) + 1}</span><span className={styles.flag}>{flag(code)}</span><span className={styles.name}>{countryName(code)}</span><strong>{formatCount(entry.count)}</strong></li>; })}
-		</ol>}
+		{entries.length === 0 ? <p className={styles.empty}>No country taps have been recorded yet.</p> : <RankingEntries initialEntries={entries} initialRanking={ranking} offset={(page - 1) * PAGE_SIZE} />}
 		<nav className={styles.pagination} aria-label="Ranking pages">
 			{page > 1 ? <Link href={`/rankings?page=${page - 1}`}>← Previous</Link> : <span />}
 			<span>Page {page} of {pageCount}</span>

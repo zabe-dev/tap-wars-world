@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
-import { countryName, flag, formatCount, getTopCountries } from "./countries";
+import { countryName, flag, getTopCountries } from "./countries";
 import styles from "./ranking.module.css";
 import { LoadingDots } from "./loading-dots";
 
@@ -32,8 +32,8 @@ export function Ranking({ ranking, loading, highlightedCountry, addedTaps, settl
             <span className={styles.flag} aria-hidden="true">{flag(country)}</span>
             <span className={styles.name}>{countryName(country)}</span>
             <span key={settlement?.country === country ? settlement.consumed : "stable"} className={`${styles.score} ${highlightedCountry === country || (settlement?.country === country && consumed > 0) ? styles.scoreFlash : ""}`} title={`${displayCount.toLocaleString("en-US")} taps`}>
-              {formatCount(displayCount)}
-              {remaining > 0 && <em className={styles.added}>+{formatCount(remaining)}</em>}
+              {displayCount.toLocaleString("en-US")}
+              {remaining > 0 && <em className={styles.added}>+{remaining.toLocaleString("en-US")}</em>}
             </span>
           </motion.div>;
           })()}

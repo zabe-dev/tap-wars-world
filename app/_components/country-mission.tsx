@@ -5,7 +5,7 @@ import { countryCode, countryName, flag, formatCount } from "./countries";
 import styles from "./country-mission.module.css";
 
 const BATTLE_THRESHOLD = 10;
-const BATTLE_GOAL = process.env.NODE_ENV === "development" ? 50 : 250;
+const BATTLE_GOAL = 250;
 type TapEvent = { id: number; country: string } | null;
 type BattleState = { left: string; right: string; scores: Record<string, number>; frozen: Record<string, number>; completed?: boolean };
 

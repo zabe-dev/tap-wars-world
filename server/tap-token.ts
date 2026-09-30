@@ -11,8 +11,7 @@ export function getOrSetTapToken(headers: Headers, setHeader: (name: string, val
 	const existing = readCookie(headers);
 	if (existing) return existing;
 	const token = randomBytes(24).toString("hex");
-	const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
-	setHeader("Set-Cookie", `${COOKIE_NAME}=${token}; Path=/; SameSite=Strict${secure}`);
+	setHeader("Set-Cookie", `${COOKIE_NAME}=${token}; Path=/; HttpOnly; SameSite=Strict; Secure`);
 	return token;
 }
 
