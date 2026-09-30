@@ -10,4 +10,3 @@
 @media (max-width: 600px) { .hero { padding-top: 96px; } }
 @media (prefers-reduced-motion: reduce) { .dot { animation: none; }.ring, .toast { animation-duration: .01ms; } }
 .error { min-height: 16px; margin: -16px 0 28px; visibility: hidden; text-align: center; color: var(--mute); font-size: 12px; line-height: 16px; }.errorVisible { visibility: visible; }
-.footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 4px 0 28px; color: var(--mute); font-size: 12px; }.footer nav { display: inline-flex; gap: 12px; }.footer a { color: inherit; text-underline-offset: 3px; }

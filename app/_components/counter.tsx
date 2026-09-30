@@ -8,7 +8,6 @@ import { Ranking } from "./ranking";
 import { getVisitorLocation } from "./visitor-location";
 import { LoadingDots } from "./loading-dots";
 import { CountryMission } from "./country-mission";
-import Link from "next/link";
 import { MilestoneConfetti } from "./milestone-confetti";
 
 type Place = [city: string, country: string];
@@ -47,6 +46,7 @@ export function Counter() {
 	const [rankingLoading, setRankingLoading] = useState(true);
 	const [rings, setRings] = useState<number[]>([]);
 	const audio = useRef<AudioContext | null>(null);
+	const soundStep = useRef(0);
 	const sorted = useMemo(() => Object.entries(counts).sort((a, b) => b[1] - a[1]), [counts]);
 
 	useEffect(() => {
@@ -130,14 +130,21 @@ export function Counter() {
 		try {
 			audio.current ??= new AudioContext();
 			const context = audio.current;
-			const oscillator = context.createOscillator();
-			const gain = context.createGain();
-			oscillator.frequency.value = 620;
-			gain.gain.setValueAtTime(0.08, context.currentTime);
-			gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.16);
-			oscillator.connect(gain).connect(context.destination);
-			oscillator.start();
-			oscillator.stop(context.currentTime + 0.17);
+			const start = context.currentTime;
+			const base = 520 + (soundStep.current++ % 5) * 24;
+			[base, base * 1.25].forEach((frequency, index) => {
+				const oscillator = context.createOscillator();
+				const gain = context.createGain();
+				const noteStart = start + index * 0.045;
+				oscillator.type = "sine";
+				oscillator.frequency.value = frequency;
+				gain.gain.setValueAtTime(0.0001, noteStart);
+				gain.gain.exponentialRampToValueAtTime(0.06, noteStart + 0.012);
+				gain.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.13);
+				oscillator.connect(gain).connect(context.destination);
+				oscillator.start(noteStart);
+				oscillator.stop(noteStart + 0.15);
+			});
 		} catch {
 			/* Audio is optional. */
 		}
@@ -236,7 +243,6 @@ export function Counter() {
 					setBattleParticipants(null);
 				}} />}
 				<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={battleActive ? null : highlightCountry} addedTaps={addedTaps} settlement={settlement} order={settlementOrder} />
-				<footer className={styles.footer}><span>© 2026 tapwars.world</span><nav><Link href="/rankings">Rankings</Link><Link href="/milestones">Milestones</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></nav></footer>
 			</div>
 			{milestone && <MilestoneConfetti key={milestone.tapTotal} onComplete={() => setMilestone(null)} />}
 		</main>

@@ -1,0 +1,2 @@
+.footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: min(820px, 100%); margin: 0 auto; padding: 4px 20px 28px; color: var(--mute); font-size: 12px; }.footer nav { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }.footer a { color: inherit; text-underline-offset: 3px; }
+@media (max-width: 520px) { .footer { align-items: flex-start; flex-direction: column; gap: 8px; }.footer nav { justify-content: flex-start; } }
