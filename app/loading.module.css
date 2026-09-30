@@ -1,4 +1,4 @@
-.page { display: grid; min-height: 100vh; place-items: center; background: var(--bg); color: var(--hot); }
+.page { display: grid; min-height: 100vh; place-items: center; background: var(--bg); color: var(--ink); }
 .dots { display: inline-flex; align-items: center; gap: 5px; }
 .dots i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .35; animation: bounce 1s ease-in-out infinite; }
 .dots i:nth-child(2) { animation-delay: .14s; }

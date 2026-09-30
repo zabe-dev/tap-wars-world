@@ -16,9 +16,11 @@ export default function TermsPage() {
     <p>The service is provided on an as-available basis. We may change, suspend, limit, or discontinue features, including the ranking and battles, without notice. Do not rely on the service for legal, financial, safety, or other critical decisions.</p>
     <h2>Enforcement</h2>
     <p>We may reject taps, rate-limit requests, remove abusive activity, or block access when we reasonably believe these terms or the security of the service are being violated.</p>
+    <h2>Advertising</h2>
+    <p>We plan to display advertisements on the service. Advertisements may be provided by third parties, and their content, targeting, availability, and terms are controlled by those providers.</p>
     <h2>Disclaimer</h2>
     <p>To the extent permitted by law, the service is provided without warranties of accuracy, availability, fitness for a particular purpose, or uninterrupted operation. You use it at your own risk.</p>
     <h2>Contact</h2>
-    <p>Questions about these terms should be sent to the site operator using the published contact address for this deployment.</p>
+    <p>Questions about these terms should be sent to <a href="mailto:contact@tapwars.world">contact@tapwars.world</a>.</p>
   </article></main>;
 }
