@@ -15,7 +15,7 @@ export default function PrivacyPage() {
     <h2>Storage and retention</h2>
     <p>Accepted taps are stored as aggregated country totals in a database. We do not store individual tap records or IP addresses in the ranking database. Temporary rate-limit data is held in application memory and normally disappears when the service restarts. An active battle may be stored in your browser’s local storage so it survives a refresh.</p>
     <h2>Advertising</h2>
-    <p>We plan to display advertisements. Advertising providers may use cookies or similar technologies and may receive device or usage information according to their own privacy policies. We will update this policy if the advertising setup changes.</p>
+    <p>The service displays advertisements. Advertising providers may use cookies or similar technologies and may receive device or usage information according to their own privacy policies.</p>
     <h2>Service providers</h2>
     <p>Our hosting, database, location, and advertising providers may process technical information needed to deliver the service. Location lookups are performed using a local database when possible.</p>
     <h2>Your choices</h2>

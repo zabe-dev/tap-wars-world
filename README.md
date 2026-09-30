@@ -69,6 +69,6 @@ build uses normal `next start`, not a trimmed standalone image.
 ## Counter storage
 
 When `DATABASE_URL` is configured, country totals are stored in PostgreSQL and
-incremented atomically. The first start applies the Drizzle migration; a fresh
-database starts with no country totals. Without a database URL, local
-development falls back to an empty in-memory store.
+incremented atomically. The first start applies the Drizzle migration and seeds
+a small top-10 starting ranking so battles are visible immediately. Without a
+database URL, local development uses the same seeded in-memory ranking.

@@ -17,7 +17,7 @@ export default function TermsPage() {
     <h2>Enforcement</h2>
     <p>We may reject taps, rate-limit requests, remove abusive activity, or block access when we reasonably believe these terms or the security of the service are being violated.</p>
     <h2>Advertising</h2>
-    <p>We plan to display advertisements on the service. Advertisements may be provided by third parties, and their content, targeting, availability, and terms are controlled by those providers.</p>
+    <p>The service displays advertisements provided by third parties. Their content, targeting, availability, and terms are controlled by those providers.</p>
     <h2>Disclaimer</h2>
     <p>To the extent permitted by law, the service is provided without warranties of accuracy, availability, fitness for a particular purpose, or uninterrupted operation. You use it at your own risk.</p>
     <h2>Contact</h2>
