@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./counter.module.css";
-import { countryCode, countryName, flag, getTopCountries, toCounts } from "./countries";
+import { countryCode, flag, getTopCountries, toCounts } from "./countries";
 import { HeaderControls } from "./header-controls";
 import { Ranking } from "./ranking";
 import { getVisitorLocation } from "./visitor-location";
@@ -81,9 +81,9 @@ export function Counter() {
 			try {
 				const activity = JSON.parse((event as MessageEvent<string>).data) as { city?: string; country?: string; clientId?: string; battle?: SharedBattle };
 				if (activity.battle !== undefined) setSharedBattle(activity.battle);
-				if (!activity.city || !activity.country || activity.clientId === clientId.current) return;
+				if (!activity.country || activity.clientId === clientId.current) return;
 				const code = countryCode(activity.country);
-				showToast([activity.city, code], false);
+				showToast([activity.city?.trim() || "Another location", code], false);
 				setHighlightCountry(code);
 				window.setTimeout(() => setHighlightCountry((current) => current === code ? null : current), 700);
 				if (!battleActiveRef.current) {
@@ -310,7 +310,7 @@ function Toast({ toast }: { toast: Toast }) {
 			<span>
 				{toast.mine ? "You · " : ""}
 				{toast.place[0]}{" "}
-				<em>{toast.place[1] === "WW" ? "" : countryName(toast.place[1])}</em>
+				<em>{toast.place[1] === "WW" ? "" : toast.place[1]}</em>
 			</span>
 		</div>
 	);
