@@ -6,7 +6,7 @@ import styles from "./country-mission.module.css";
 
 type BattleState = { left: string; right: string; scores: Record<string, number>; frozen: Record<string, number>; completed?: boolean };
 type SharedBattle = { left: string; right: string; scores: Record<string, number>; frozen: Record<string, number>; completed?: boolean } | null;
-const BATTLE_GOAL = 250;
+const BATTLE_SWING = 250;
 
 export function CountryMission({ visitorCountry, sharedBattle }: { visitorCountry: string | null; sharedBattle: SharedBattle }) {
   const [battle, setBattle] = useState<BattleState | null>(null);
@@ -33,12 +33,12 @@ export function CountryMission({ visitorCountry, sharedBattle }: { visitorCountr
 function Battle({ left, right, scores }: { left: string; right: string; scores: Record<string, number> }) {
   const leftScore = scores[left] ?? 0;
   const rightScore = scores[right] ?? 0;
-  const leftWidth = Math.max(0, Math.min(100, 50 + ((leftScore - rightScore) / BATTLE_GOAL) * 50));
+  const leftWidth = Math.max(0, Math.min(100, 50 + ((leftScore - rightScore) / BATTLE_SWING) * 50));
   return <section className={styles.card} aria-label="Country battle mission">
     <div className={styles.teams}>
-      <div className={styles.team}><span className={styles.identity}><span className={styles.flag}>{flag(left)}</span><span><b>{countryName(left)}</b><small>{formatCount(leftScore)}/{BATTLE_GOAL} taps</small></span></span></div>
+      <div className={styles.team}><span className={styles.identity}><span className={styles.flag}>{flag(left)}</span><span><b>{countryName(left)}</b><small>{formatCount(leftScore)} battle taps</small></span></span></div>
       <span className={styles.vs}>VS</span>
-      <div className={`${styles.team} ${styles.teamRight}`}><span className={styles.identity}><span><b>{countryName(right)}</b><small>{formatCount(rightScore)}/{BATTLE_GOAL} taps</small></span><span className={styles.flag}>{flag(right)}</span></span></div>
+      <div className={`${styles.team} ${styles.teamRight}`}><span className={styles.identity}><span><b>{countryName(right)}</b><small>{formatCount(rightScore)} battle taps</small></span><span className={styles.flag}>{flag(right)}</span></span></div>
     </div>
     <div className={styles.track} aria-label={`${countryName(left)} versus ${countryName(right)}`}>
       <span className={styles.leftTeam} style={{ width: `${leftWidth}%` }} />

@@ -4,7 +4,7 @@ import { db } from "./db";
 import type { RankingEntry } from "./counter-store";
 
 export const BATTLE_THRESHOLD = 10;
-export const BATTLE_GOAL = 250;
+export const BATTLE_SWING = 250;
 export type BattleState = { left: string; right: string; scores: Record<string, number>; frozen: Record<string, number>; completed?: boolean };
 
 function toState(row: typeof activeBattles.$inferSelect): BattleState {
@@ -43,11 +43,11 @@ export async function recordBattleTap(country: string, ranking: RankingEntry[]) 
 		const battle = await getActiveBattle(ranking);
 		if (!battle || ![battle.left, battle.right].includes(country)) return battle;
 		const column = country === battle.left ? activeBattles.leftScore : activeBattles.rightScore;
-		await db.update(activeBattles).set({ [country === battle.left ? "leftScore" : "rightScore"]: sql`${column} + 1`, updatedAt: new Date() }).where(and(eq(activeBattles.id, 1), sql`${column} < ${BATTLE_GOAL}`));
+		await db.update(activeBattles).set({ [country === battle.left ? "leftScore" : "rightScore"]: sql`${column} + 1`, updatedAt: new Date() }).where(eq(activeBattles.id, 1));
 		const current = await db.select().from(activeBattles).where(eq(activeBattles.id, 1)).limit(1);
 		if (!current[0]) return null;
 		const next = toState(current[0]);
-		if (next.scores[battle.left] >= BATTLE_GOAL || next.scores[battle.right] >= BATTLE_GOAL) {
+		if (Math.abs(next.scores[battle.left] - next.scores[battle.right]) >= BATTLE_SWING) {
 			next.completed = true;
 			await db.delete(activeBattles).where(eq(activeBattles.id, 1));
 		}
