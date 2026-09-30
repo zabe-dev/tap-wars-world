@@ -8,14 +8,14 @@ type BattleState = { left: string; right: string; scores: Record<string, number>
 type SharedBattle = { left: string; right: string; scores: Record<string, number>; frozen: Record<string, number>; completed?: boolean } | null;
 const BATTLE_GOAL = 250;
 
-export function CountryMission({ visitorCountry, sharedBattle, onBattleStart, onBattleComplete }: { ranking: [string, number][]; visitorCountry: string | null; sharedBattle: SharedBattle; onBattleStart: (participants: [string, string], frozen: Record<string, number>) => void; onBattleComplete: () => void | Promise<void> }) {
+export function CountryMission({ visitorCountry, sharedBattle }: { visitorCountry: string | null; sharedBattle: SharedBattle }) {
   const [battle, setBattle] = useState<BattleState | null>(null);
 
   useEffect(() => {
     if (!sharedBattle) { setBattle(null); return; }
     const left = countryCode(sharedBattle.left);
     const right = countryCode(sharedBattle.right);
-    const normalized = {
+    const normalized: BattleState = {
       left,
       right,
       scores: { [left]: sharedBattle.scores[sharedBattle.left] ?? 0, [right]: sharedBattle.scores[sharedBattle.right] ?? 0 },
@@ -23,12 +23,8 @@ export function CountryMission({ visitorCountry, sharedBattle, onBattleStart, on
       completed: sharedBattle.completed,
     };
     setBattle(normalized);
-    if (normalized.completed) {
-      void Promise.resolve(onBattleComplete()).then(() => setBattle(null));
-      return;
-    }
-		if (visitorCountry && [left, right].includes(visitorCountry)) onBattleStart([left, right], normalized.frozen);
-	}, [sharedBattle, visitorCountry]);
+    if (normalized.completed) { setBattle(null); return; }
+	}, [sharedBattle]);
 
   if (!battle || battle.completed || !visitorCountry || ![battle.left, battle.right].includes(visitorCountry)) return null;
   return <Battle left={battle.left} right={battle.right} scores={battle.scores} />;

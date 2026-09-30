@@ -6,11 +6,11 @@ import { countryName, flag, getTopCountries } from "./countries";
 import styles from "./ranking.module.css";
 import { LoadingDots } from "./loading-dots";
 
-export function Ranking({ ranking, loading, highlightedCountry, addedTaps, settlement, order }: { ranking: [string, number][]; loading: boolean; highlightedCountry?: string | null; addedTaps?: { country: string; amount: number } | null; settlement?: { country: string; total: number; consumed: number } | null; order?: string[] | null }) {
+export function Ranking({ ranking, loading, highlightedCountry }: { ranking: [string, number][]; loading: boolean; highlightedCountry?: string | null }) {
   const reduced = useReducedMotion();
   const [utcNow, setUtcNow] = useState<Date | null>(null);
   const rankingMap = new Map(ranking);
-  const countries = order ? order.map((country) => [country, rankingMap.get(country) ?? 0] as [string, number]) : getTopCountries(ranking);
+  const countries = getTopCountries(ranking);
   useEffect(() => {
     const update = () => setUtcNow(new Date());
     update();
@@ -31,9 +31,6 @@ export function Ranking({ ranking, loading, highlightedCountry, addedTaps, settl
         {countries.map(([country, count], index) => (
           <li key={country}>
           {(() => {
-            const consumed = settlement?.country === country ? settlement.consumed : 0;
-            const displayCount = count + consumed;
-            const remaining = addedTaps?.country === country ? addedTaps.amount - consumed : 0;
             return <motion.div
             className={styles.entry}
             layout={reduced ? false : "position"}
@@ -42,9 +39,8 @@ export function Ranking({ ranking, loading, highlightedCountry, addedTaps, settl
             <span className={styles.rank}>{index + 1}</span>
             <span className={styles.flag} aria-hidden="true">{flag(country)}</span>
             <span className={styles.name}>{countryName(country)}</span>
-            <span key={settlement?.country === country ? settlement.consumed : "stable"} className={`${styles.score} ${highlightedCountry === country || (settlement?.country === country && consumed > 0) ? styles.scoreFlash : ""}`} title={`${displayCount.toLocaleString("en-US")} taps`}>
-              {remaining > 0 && <em className={styles.added}>+{remaining.toLocaleString("en-US")}</em>}
-              {displayCount.toLocaleString("en-US")}
+            <span className={`${styles.score} ${highlightedCountry === country ? styles.scoreFlash : ""}`} title={`${count.toLocaleString("en-US")} taps`}>
+              {count.toLocaleString("en-US")}
             </span>
           </motion.div>;
           })()}
