@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { countryCode, locationLabel } from "./countries";
 import { DeviceLocation, getDeviceLocation } from "./device-location";
 import { LocationConsent } from "./location-consent";
-import { locationConsentDay, millisecondsUntilUtcMidnight } from "./location-consent-date";
+import {
+  hasRememberedLocationConsent,
+  rememberedLocationConsentValue,
+} from "./location-consent-storage";
 import { getVisitorLocation } from "./visitor-location";
 
-const CONSENT_KEY = "tapwars:location-prompt-seen";
-const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
+const REMEMBER_KEY = "tapwars:location-consent-remembered";
 
 export function LocationStatus({ onResolved }: { onResolved: (location: DeviceLocation) => void }) {
   const [pending, setPending] = useState(false);
@@ -16,6 +18,7 @@ export function LocationStatus({ onResolved }: { onResolved: (location: DeviceLo
   const [result, setResult] = useState("");
   const [approximate, setApproximate] = useState("");
   const [consentOpen, setConsentOpen] = useState(false);
+  const [rememberChoice, setRememberChoice] = useState(false);
   const busy = useRef(false);
 
   useEffect(() => {
@@ -25,36 +28,27 @@ export function LocationStatus({ onResolved }: { onResolved: (location: DeviceLo
   }, []);
 
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-    function checkDay() {
-      const now = new Date();
-      if (IS_DEVELOPMENT) {
-        setConsentOpen(true);
-        return;
-      }
-      try {
-        if (localStorage.getItem(CONSENT_KEY) !== locationConsentDay(now)) setConsentOpen(true);
-      } catch { setConsentOpen(true); }
-      clearTimeout(timer);
-      timer = setTimeout(checkDay, millisecondsUntilUtcMidnight(now));
+    try {
+      const remembered = hasRememberedLocationConsent(localStorage.getItem(REMEMBER_KEY));
+      if (!remembered) localStorage.removeItem(REMEMBER_KEY);
+      setConsentOpen(!remembered);
+    } catch {
+      setConsentOpen(true);
     }
-    function onVisible() {
-      if (document.visibilityState === "visible") checkDay();
-    }
-    checkDay();
-    document.addEventListener("visibilitychange", onVisible);
-    return () => { clearTimeout(timer); document.removeEventListener("visibilitychange", onVisible); };
   }, []);
+
+  function saveRememberChoice(remember: boolean) {
+    try {
+      if (remember) localStorage.setItem(REMEMBER_KEY, rememberedLocationConsentValue());
+      else localStorage.removeItem(REMEMBER_KEY);
+    } catch {
+      /* The choice still applies until this page is closed. */
+    }
+  }
 
   function dismissConsent() {
     setConsentOpen(false);
-    try { localStorage.setItem(CONSENT_KEY, locationConsentDay()); }
-    catch { /* The choice still applies until this page is closed. */ }
-  }
-
-  function markConsentSeen() {
-    try { localStorage.setItem(CONSENT_KEY, locationConsentDay()); }
-    catch { /* The choice still applies until this page is closed. */ }
+    saveRememberChoice(rememberChoice);
   }
 
   async function locate() {
@@ -85,7 +79,9 @@ export function LocationStatus({ onResolved }: { onResolved: (location: DeviceLo
     result={result}
     error={error}
     approximate={approximate}
+    rememberChoice={rememberChoice}
+    onRememberChange={setRememberChoice}
     onDismiss={dismissConsent}
-    onAllow={() => { markConsentSeen(); void locate(); }}
+    onAllow={() => { saveRememberChoice(rememberChoice); void locate(); }}
   />;
 }

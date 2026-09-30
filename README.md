@@ -50,18 +50,16 @@ Verify after deployment
 using a public connection: `POST /api/tap` returns the detected city/country.
 Vercel-specific location headers are no longer used.
 
-On the first visit each UTC day, a modal offers **Use my location** or **Not now**.
-Dismissing or accepting stores the current UTC date locally. The choice resets
-at 00:00 UTC, including in open tabs; returning to a background tab rechecks the
-date. The modal appears again at the next UTC day. No browser permission is requested until the user
+When you visit the site, a modal offers **Use my location** or **Not now**. It
+appears again on later visits unless **Remember my choice for 7 days** is
+checked. The saved choice expires after seven days.
+No browser permission is requested until the user
 chooses **Use my location**. That action requests browser location permission and
 sends current coordinates directly to BigDataCloud's free client-side reverse
 geocoding endpoint. It needs HTTPS (localhost is supported) and no API key.
-Coordinates are not sent to this app's server or saved in browser storage.
-The derived device city and country are sent with your next tap so that tap can
-use the more accurate location. Raw coordinates stay with BigDataCloud; this
-feature is not identity or fraud verification. Denied permission preserves the
-public-IP fallback.
+We receive only the returned city and country with your next tap; raw
+coordinates are not sent to this app's server or saved in browser storage.
+Denied permission preserves the public-IP fallback.
 Requests are user-triggered, limited to one attempt per 30 seconds, and never
 automatically retried. A missing city falls back to the provider's locality.
 Provider terms: https://www.bigdatacloud.com/docs/article/fair-use-policy-for-free-client-side-reverse-geocoding-api

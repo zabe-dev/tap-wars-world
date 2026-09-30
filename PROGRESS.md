@@ -316,3 +316,12 @@
 - [x] Validate device location on the tap route and use it for attribution
 - [x] Update Terms, Privacy, and README disclosures
 - [x] Add regression coverage for device-attributed taps
+
+## 2026-09-30 — Remember location consent choice
+
+- [x] Show the consent modal on every fresh visit by default
+- [x] Add an optional “Remember my choice” checkbox
+- [x] Remembered consent expires after seven days in every environment
+- [x] Remove development-only modal behavior and UTC-day consent state
+- [x] Simplify location copy, style the checkbox, and title-case legal headings
+- [x] Add standard privacy, disclaimer, liability, and indemnity language

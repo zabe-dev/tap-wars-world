@@ -7,6 +7,13 @@
 .card h2 { margin: 0 0 10px; font-size: clamp(25px, 6vw, 32px); letter-spacing: -.045em; }
 .card p { margin: 0 0 12px; line-height: 1.55; }
 .disclosure { color: var(--mute); font-size: 13px; }
+.remember { position: relative; display: inline-flex; align-items: center; gap: 8px; margin: 4px 0 0; color: var(--mute); font-size: 12px; cursor: pointer; }
+.remember input { position: absolute; width: 18px; height: 18px; margin: 0; opacity: 0; cursor: pointer; }
+.checkmark { display: grid; place-items: center; width: 18px; height: 18px; border: 1px solid var(--bar); border-radius: 6px; color: white; transition: background .16s ease, border-color .16s ease, transform .16s ease; }
+.checkmark svg { width: 13px; height: 13px; opacity: 0; transform: scale(.7); transition: opacity .16s ease, transform .16s ease; }
+.remember input:checked + .checkmark { border-color: var(--hot); background: var(--hot); }
+.remember input:checked + .checkmark svg { opacity: 1; transform: scale(1); }
+.remember input:focus-visible + .checkmark { outline: 2px solid var(--hot); outline-offset: 3px; }
 .current { display: grid; gap: 2px; margin: 0 0 15px !important; padding: 12px 13px; border: 1px solid var(--bar); border-radius: 12px; background: color-mix(in srgb, var(--ink) 4%, transparent); }
 .current span, .current small { color: var(--mute); font-size: 11px; }
 .current strong { font-size: 15px; }
@@ -21,4 +28,4 @@
 .actions button:disabled { opacity: .6; cursor: wait; }
 .actions button:focus-visible { outline: 2px solid var(--hot); outline-offset: 3px; }
 @media (max-width: 520px) { .card { padding: 24px; } .actions { display: flex; } .actions button:first-child { flex: 0 0 auto; } .actions .allow { flex: 1; } }
-@media (prefers-reduced-motion: reduce) { .actions button { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .actions button, .checkmark, .checkmark svg { transition: none; } }
