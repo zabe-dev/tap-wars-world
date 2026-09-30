@@ -71,6 +71,17 @@ test("tap rejects cross-site browser requests", async () => {
 	expect((await (await app.request("/api/ranking")).json()).ranking).toEqual(before.ranking);
 });
 
+test("tap accepts the public host behind a TLS-terminating proxy", async () => {
+	const session = await app.request("/api/ranking", { headers: { host: "tapwars.world" } });
+	const { tapToken } = await session.json() as { tapToken: string };
+	const cookie = session.headers.get("set-cookie")?.split(";", 1)[0] ?? "";
+	const response = await app.request("http://10.0.1.20:3000/api/tap", {
+		method: "POST",
+		headers: { origin: "https://tapwars.world", host: "10.0.1.20:3000", "x-forwarded-host": "tapwars.world", cookie, "x-tap-token": tapToken },
+	});
+	expect(response.status).toBe(200);
+});
+
 test("trusted proxy location takes priority over browser fallback", async () => {
   process.env.TRUSTED_PROXY_HOPS = "1";
   const response = await app.request("/api/location", {

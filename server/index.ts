@@ -10,6 +10,19 @@ import { streamSSE } from "hono/streaming";
 
 const app = new Hono().basePath("/api");
 
+function isSameSiteOrigin(request: Request) {
+	const origin = request.headers.get("origin");
+	if (!origin) return false;
+	try {
+		const originUrl = new URL(origin);
+		const forwardedHost = request.headers.get("x-forwarded-host")?.split(",", 1)[0]?.trim();
+		const requestHost = forwardedHost || request.headers.get("host") || new URL(request.url).host;
+		return originUrl.host === requestHost;
+	} catch {
+		return false;
+	}
+}
+
 app.get("/ranking", async (context) => {
 	const tapToken = getOrSetTapToken(context.req.raw.headers, (name, value) => context.header(name, value));
 	return context.json({ ranking: await getStoredRanking(), tapToken });
@@ -38,8 +51,7 @@ app.post("/location", async (context) => {
 });
 
 app.post("/tap", async (context) => {
-	const origin = context.req.header("origin");
-	if (!origin || origin !== new URL(context.req.url).origin) {
+	if (!isSameSiteOrigin(context.req.raw)) {
 		return context.json({ error: { code: "INVALID_ORIGIN", message: "Tap requests must come from this site." } }, 403);
 	}
 	if (!validTapToken(context.req.raw.headers, context.req.header("x-tap-token"))) {
@@ -62,7 +74,7 @@ app.post("/tap", async (context) => {
 	const accepted = score.points === 1;
 	const ranking = await recordStoredTap(location.country, accepted ? 1 : 0);
 	const milestone = accepted ? await recordMilestone(ranking) : null;
-	if (accepted) await publishActivity({ country: location.country, clientId: context.req.header("x-client-id") });
+	if (accepted) await publishActivity({ city: location.city, country: location.country, clientId: context.req.header("x-client-id") });
 	return context.json({ ...location, ...score, accepted, ranking, milestone });
 });
 
