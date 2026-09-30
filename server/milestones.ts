@@ -1,9 +1,11 @@
+import { desc } from "drizzle-orm";
 import { db } from "./db";
 import { milestones } from "./db/schema";
 import type { RankingEntry } from "./counter-store";
 
 const MILESTONE_INTERVAL = process.env.NODE_ENV === "development" ? 10 : 100;
 const recordedMilestones = new Set<number>();
+const fallbackMilestones = new Map<number, MilestoneSnapshot>();
 
 export type MilestoneSnapshot = {
 	tapTotal: number;
@@ -24,6 +26,7 @@ export async function recordMilestone(ranking: RankingEntry[]): Promise<Mileston
 	if (!db) {
 		if (recordedMilestones.has(snapshot.tapTotal)) return null;
 		recordedMilestones.add(snapshot.tapTotal);
+		fallbackMilestones.set(snapshot.tapTotal, snapshot);
 		return snapshot;
 	}
 	try {
@@ -35,6 +38,18 @@ export async function recordMilestone(ranking: RankingEntry[]): Promise<Mileston
 		console.error("Milestone record failed; using in-memory milestone state.", error);
 		if (recordedMilestones.has(snapshot.tapTotal)) return null;
 		recordedMilestones.add(snapshot.tapTotal);
+		fallbackMilestones.set(snapshot.tapTotal, snapshot);
 		return snapshot;
+	}
+}
+
+export async function listMilestones(): Promise<MilestoneSnapshot[]> {
+	if (!db) return [...fallbackMilestones.values()].sort((a, b) => b.tapTotal - a.tapTotal);
+	try {
+		const rows = await db.select().from(milestones).orderBy(desc(milestones.tapTotal));
+		return rows.map((row) => ({ tapTotal: row.tapTotal, topTen: row.topTen as RankingEntry[] }));
+	} catch (error) {
+		console.error("Milestone history read failed; using in-memory history.", error);
+		return [...fallbackMilestones.values()].sort((a, b) => b.tapTotal - a.tapTotal);
 	}
 }

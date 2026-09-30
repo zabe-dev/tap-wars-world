@@ -32,6 +32,7 @@ export function Counter() {
 	const [tapError, setTapError] = useState<string | null>(null);
 	const [highlightCountry, setHighlightCountry] = useState<string | null>(null);
 	const [visitorCountry, setVisitorCountry] = useState<string | null>(null);
+	const [tapToken, setTapToken] = useState<string | null>(null);
 	const [tapEvent, setTapEvent] = useState<TapEvent>(null);
 	const [battleActive, setBattleActive] = useState(false);
 	const [battleParticipants, setBattleParticipants] = useState<[string, string] | null>(null);
@@ -52,7 +53,8 @@ export function Counter() {
 		void getVisitorLocation().then((location) => setVisitorCountry(countryCode(location.country)));
 		void fetch("/api/ranking")
 			.then((response) => response.json())
-			.then((data: { ranking: RankingEntry[] }) => {
+			.then((data: { ranking: RankingEntry[]; tapToken: string }) => {
+				setTapToken(data.tapToken);
 				setCounts(toCounts(data.ranking));
 				setTotal(totalFor(data.ranking));
 			})
@@ -78,9 +80,13 @@ export function Counter() {
 		try {
 			const location = await getVisitorLocation();
 			setVisitorCountry(countryCode(location.country));
+			if (!tapToken) {
+				setTapError("Tap session is still loading. Please try again.");
+				return;
+			}
 			const response = await fetch("/api/tap", {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
+				headers: { "Content-Type": "application/json", "x-tap-token": tapToken },
 				body: JSON.stringify(location.ip ? { ip: location.ip } : {}),
 			});
 			if (!response.ok) throw new Error("Tap failed");
@@ -92,7 +98,10 @@ export function Counter() {
 			}
 			const nextCounts = toCounts(data.ranking);
 			const country = countryCode(data.country);
-			if (data.milestone) setMilestone(data.milestone);
+			if (data.milestone) {
+				setMilestone(data.milestone);
+				celebrate();
+			}
 			if (battleActive) {
 				setPendingRanking(data.ranking);
 				pendingRankingRef.current = data.ranking;
@@ -129,6 +138,29 @@ export function Counter() {
 			oscillator.connect(gain).connect(context.destination);
 			oscillator.start();
 			oscillator.stop(context.currentTime + 0.17);
+		} catch {
+			/* Audio is optional. */
+		}
+	}
+
+	function celebrate() {
+		if (muted) return;
+		try {
+			audio.current ??= new AudioContext();
+			const context = audio.current;
+			[523, 659, 784, 1046].forEach((frequency, index) => {
+				const oscillator = context.createOscillator();
+				const gain = context.createGain();
+				const start = context.currentTime + index * 0.09;
+				oscillator.type = "triangle";
+				oscillator.frequency.value = frequency;
+				gain.gain.setValueAtTime(0.0001, start);
+				gain.gain.exponentialRampToValueAtTime(0.09, start + 0.02);
+				gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.22);
+				oscillator.connect(gain).connect(context.destination);
+				oscillator.start(start);
+				oscillator.stop(start + 0.24);
+			});
 		} catch {
 			/* Audio is optional. */
 		}
@@ -204,7 +236,7 @@ export function Counter() {
 					setBattleParticipants(null);
 				}} />}
 				<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={battleActive ? null : highlightCountry} addedTaps={addedTaps} settlement={settlement} order={settlementOrder} />
-				<footer className={styles.footer}><span>© 2026 tapwars.world</span><nav><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></nav></footer>
+				<footer className={styles.footer}><span>© 2026 tapwars.world</span><nav><Link href="/milestones">Milestones</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></nav></footer>
 			</div>
 			{milestone && <MilestoneConfetti key={milestone.tapTotal} onComplete={() => setMilestone(null)} />}
 		</main>

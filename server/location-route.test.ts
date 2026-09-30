@@ -2,6 +2,15 @@ import { afterEach, expect, test } from "bun:test";
 import app from "./index";
 
 const originalHops = process.env.TRUSTED_PROXY_HOPS;
+async function tapRequest(options: RequestInit = {}) {
+	const session = await app.request("/api/ranking");
+	const { tapToken } = await session.json() as { tapToken: string };
+	const cookie = session.headers.get("set-cookie")?.split(";", 1)[0] ?? "";
+	return app.request("/api/tap", {
+		...options,
+		headers: { ...(options.headers as Record<string, string> | undefined), cookie, "x-tap-token": tapToken },
+	});
+}
 afterEach(() => {
   if (originalHops === undefined) delete process.env.TRUSTED_PROXY_HOPS;
   else process.env.TRUSTED_PROXY_HOPS = originalHops;
@@ -11,7 +20,7 @@ test("tap uses proxy IP and merges into the existing country ranking", async () 
   process.env.TRUSTED_PROXY_HOPS = "1";
   const before = await (await app.request("/api/ranking")).json();
 	const previous = before.ranking.find((entry: { country: string }) => entry.country === "United States")?.count ?? 0;
-  const response = await app.request("/api/tap", {
+  const response = await tapRequest({
     method: "POST",
     headers: { "x-forwarded-for": "8.8.8.8", "x-vercel-ip-country": "PH" },
   });
@@ -23,7 +32,7 @@ test("tap uses proxy IP and merges into the existing country ranking", async () 
 
 test("tap still counts without a location", async () => {
   process.env.TRUSTED_PROXY_HOPS = "1";
-  const response = await app.request("/api/tap", { method: "POST" });
+  const response = await tapRequest({ method: "POST" });
   const data = await response.json();
   expect(response.status).toBe(200);
   expect(data.city).toBe("Location unknown");
@@ -38,7 +47,7 @@ test("localhost public-IP fallback increments the actual resolved country", asyn
   expect(location.country).toBe("United States");
   const before = await (await app.request("/api/ranking")).json();
 	const previous = before.ranking.find((entry: { country: string }) => entry.country === location.country)?.count ?? 0;
-  const taped = await (await app.request("/api/tap", options)).json();
+  const taped = await (await tapRequest(options)).json();
   expect(taped.country).toBe(location.country);
   expect(taped.ranking.find((entry: { country: string }) => entry.country === location.country).count).toBe(previous + 1);
 });
@@ -46,10 +55,10 @@ test("localhost public-IP fallback increments the actual resolved country", asyn
 test("invalid browser input cannot change the ranking", async () => {
   const before = await (await app.request("/api/ranking")).json();
   for (const body of ['{"ip":"invalid"}', '{"country":"Philippines"}', "{"]) {
-    const response = await app.request("/api/tap", { method: "POST", body });
+    const response = await tapRequest({ method: "POST", body });
     expect(response.status).toBe(400);
   }
-  expect(await (await app.request("/api/ranking")).json()).toEqual(before);
+  expect((await (await app.request("/api/ranking")).json()).ranking).toEqual(before.ranking);
 });
 
 test("tap rejects cross-site browser requests", async () => {
@@ -59,7 +68,7 @@ test("tap rejects cross-site browser requests", async () => {
 		headers: { origin: "https://attacker.example" },
 	});
 	expect(response.status).toBe(403);
-	expect(await (await app.request("/api/ranking")).json()).toEqual(before);
+	expect((await (await app.request("/api/ranking")).json()).ranking).toEqual(before.ranking);
 });
 
 test("trusted proxy location takes priority over browser fallback", async () => {
