@@ -283,10 +283,10 @@ export function Counter() {
 						className={`${styles.button} ${buttonPressed ? styles.buttonPressed : ""}`}
 						onClick={tap}
 						disabled={rankingLoading || !tapToken || (requiresTapVerification && !tapSessionReady)}
-						onPointerDown={() => { if (consentDecided) setButtonPressed(true); }}
+						onPointerDown={() => setButtonPressed(true)}
 						onPointerUp={(event) => { setButtonPressed(false); event.currentTarget.blur(); }}
 						onPointerCancel={() => setButtonPressed(false)}
-						onKeyDown={(event) => { if (consentDecided && (event.key === " " || event.key === "Enter")) setButtonPressed(true); }}
+						onKeyDown={(event) => { if (event.key === " " || event.key === "Enter") setButtonPressed(true); }}
 						onKeyUp={() => setButtonPressed(false)}
 						aria-label={`Add your tap to tapwars.world. ${Math.max(0, nextMilestone(total) - total).toLocaleString("en-US")} taps remaining to the next milestone.`}
 					>
