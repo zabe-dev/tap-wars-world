@@ -35,7 +35,7 @@ export function Counter() {
 	const [total, setTotal] = useState(0);
 	const [counts, setCounts] = useState(initialCounts);
 	const [toasts, setToasts] = useState<Toast[]>([]);
-	const { muted } = useSound();
+	const { muted, anonymous } = useSound();
 	const [tapError, setTapError] = useState<string | null>(null);
 	const [highlightCountry, setHighlightCountry] = useState<string | null>(null);
 	const [visitorCountry, setVisitorCountry] = useState<string | null>(null);
@@ -275,7 +275,7 @@ export function Counter() {
 						<span key={id} className={styles.ring} />
 					))}
 					{toasts.map((toast) => (
-						<Toast key={toast.id} toast={toast} />
+						<Toast key={toast.id} toast={toast} anonymous={anonymous} />
 					))}
 					<button
 						className={`${styles.button} ${buttonPressed ? styles.buttonPressed : ""}`}
@@ -307,7 +307,7 @@ export function Counter() {
 	);
 }
 
-function Toast({ toast }: { toast: Toast }) {
+function Toast({ toast, anonymous }: { toast: Toast; anonymous: boolean }) {
 	return (
 		<div
 			className={`${styles.toast} ${toast.mine ? styles.mine : ""}`}
@@ -318,7 +318,7 @@ function Toast({ toast }: { toast: Toast }) {
 			<span className={styles.toastFlag}>{flag(toast.place[1])}</span>
 			<span>
 				{toast.mine ? "You · " : ""}
-				{toast.place[0]}{" "}
+				<span className={anonymous ? styles.blurredCity : undefined} aria-label={anonymous ? "City hidden" : toast.place[0]}>{toast.place[0]}</span>{" "}
 				<em>{toast.place[1] === "WW" ? "" : toast.place[1]}</em>
 			</span>
 		</div>
