@@ -36,7 +36,8 @@ app.get("/activity/stream", (context) => streamSSE(context, async (stream) => {
 			const unsubscribe = subscribeActivity((activity) => {
 				void stream.writeSSE({ event: "tap", data: JSON.stringify(activity) });
 			});
-			stream.onAbort(() => { unsubscribe(); resolve(); });
+			const heartbeat = setInterval(() => { void stream.writeSSE({ event: "heartbeat", data: "{}" }); }, 15_000);
+			stream.onAbort(() => { clearInterval(heartbeat); unsubscribe(); resolve(); });
 		});
 	}));
 
