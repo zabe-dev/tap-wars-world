@@ -31,6 +31,12 @@ function nextMilestone(total: number) {
 	return MILESTONE_TARGETS.find((target) => target > total) ?? MILESTONE_TARGETS[MILESTONE_TARGETS.length - 1];
 }
 
+function milestoneProgress(total: number) {
+	const next = nextMilestone(total);
+	const previous = MILESTONE_TARGETS.slice().reverse().find((target) => target <= total) ?? 0;
+	return Math.min(100, Math.max(0, ((total - previous) / (next - previous)) * 100));
+}
+
 export function Counter() {
 	const [total, setTotal] = useState(0);
 	const [counts, setCounts] = useState(initialCounts);
@@ -264,7 +270,6 @@ export function Counter() {
 		<main className={styles.page}>
 			<div className={styles.content}>
 				<section className={styles.hero}>
-					{!rankingLoading && <p className={styles.nextGoal}>Next goal: {nextMilestone(total).toLocaleString("en-US")} taps</p>}
 					<div className={styles.count} aria-live="polite" aria-busy={rankingLoading}>
 						{rankingLoading ? <LoadingDots label="Loading total taps" /> : <span title={total.toLocaleString("en-US")}>{total.toLocaleString("en-US")}</span>}
 					</div>
@@ -279,6 +284,7 @@ export function Counter() {
 					))}
 					<button
 						className={`${styles.button} ${buttonPressed ? styles.buttonPressed : ""}`}
+						style={{ "--progress": `${milestoneProgress(total)}%` } as React.CSSProperties}
 						onClick={tap}
 						disabled={rankingLoading || !tapToken || (requiresTapVerification && !tapSessionReady)}
 						onPointerDown={() => { if (consentDecided) setButtonPressed(true); }}
@@ -286,7 +292,7 @@ export function Counter() {
 						onPointerCancel={() => setButtonPressed(false)}
 						onKeyDown={(event) => { if (consentDecided && (event.key === " " || event.key === "Enter")) setButtonPressed(true); }}
 						onKeyUp={() => setButtonPressed(false)}
-						aria-label="Add your tap to tapwars.world"
+						aria-label={`Add your tap to tapwars.world. ${Math.max(0, nextMilestone(total) - total).toLocaleString("en-US")} taps remaining to the next milestone.`}
 					>
 						TAP
 					</button>
