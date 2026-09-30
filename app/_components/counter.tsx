@@ -266,7 +266,7 @@ export function Counter() {
 		<main className={styles.page}>
 			<div className={styles.content}>
 				<section className={styles.hero}>
-					<p className={styles.nextGoal}>Next goal: {Math.max(0, nextMilestone(total) - total).toLocaleString("en-US")} taps</p>
+					<p className={styles.nextGoal}>Next goal: {nextMilestone(total).toLocaleString("en-US")} taps</p>
 					<div className={styles.count} aria-live="polite" aria-busy={rankingLoading}>
 						{rankingLoading ? <LoadingDots label="Loading total taps" /> : <span title={total.toLocaleString("en-US")}>{total.toLocaleString("en-US")}</span>}
 					</div>
