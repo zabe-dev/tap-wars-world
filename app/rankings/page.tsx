@@ -6,7 +6,7 @@ import styles from "./rankings.module.css";
 const PAGE_SIZE = 25;
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-export const metadata = { title: "World Ranking · tapwars.world" };
+export const metadata = { title: "World Ranking", description: "Explore every country ranked by taps on Tap Wars World.", alternates: { canonical: "/rankings" } };
 
 export default async function RankingsPage({ searchParams }: { searchParams: Promise<{ page?: string | string[] }> }) {
 	const ranking = (await getStoredRanking()).filter((entry) => entry.country !== "Worldwide" && entry.country !== "WW");

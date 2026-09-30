@@ -3,7 +3,7 @@ import { MilestoneList } from "./milestone-list";
 import styles from "./milestones.module.css";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Milestones · tapwars.world" };
+export const metadata = { title: "Milestones", description: "See the countries that led the world at each Tap Wars World milestone.", alternates: { canonical: "/milestones" } };
 
 export default async function MilestonesPage() {
 	const milestones = await listMilestones();

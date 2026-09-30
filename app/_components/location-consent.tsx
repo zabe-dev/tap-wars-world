@@ -73,7 +73,7 @@ export function LocationConsent({ open, onAllow, onDismiss, onClose, pending = f
         </button>
         <button type="button" className={styles.allow} onClick={result ? onDismiss : onAllow} disabled={pending || verifying}>
           <Icon icon={result ? "lucide:check" : "lucide:map-pin"} aria-hidden="true" />
-          {pending ? "Finding…" : verifying ? "Verifying…" : result ? "Done" : error ? "Try again" : "Use my location"}
+          {pending ? "Locating device..." : verifying ? "Verifying..." : error ? "Try again" : "Use my location"}
         </button>
       </div>
     </motion.div>

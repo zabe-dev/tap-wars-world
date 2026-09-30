@@ -1,6 +1,6 @@
 import styles from "../legal.module.css";
 
-export const metadata = { title: "Privacy Policy · tapwars.world" };
+export const metadata = { title: "Privacy Policy", description: "Read the Tap Wars World privacy policy.", alternates: { canonical: "/privacy" } };
 
 export default function PrivacyPage() {
   return <main className={styles.page}><div className={styles.shell}><article className={styles.content}>

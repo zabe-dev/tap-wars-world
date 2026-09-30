@@ -1,6 +1,6 @@
 import styles from "../legal.module.css";
 
-export const metadata = { title: "Terms of Use · tapwars.world" };
+export const metadata = { title: "Terms of Use", description: "Read the Tap Wars World terms of use.", alternates: { canonical: "/terms" } };
 
 export default function TermsPage() {
   return <main className={styles.page}><div className={styles.shell}><article className={styles.content}>

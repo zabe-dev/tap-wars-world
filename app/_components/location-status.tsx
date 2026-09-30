@@ -82,10 +82,10 @@ export function LocationStatus({ onResolved, onConsentDecision, onVerifyDecision
   }
 
   async function locate() {
-    if (busy.current) return;
+    if (busy.current) return false;
     if (!window.isSecureContext || !navigator.geolocation) {
       setError("Device location requires HTTPS and a supported browser.");
-      return;
+      return false;
     }
     busy.current = true;
     setPending(true);
@@ -94,9 +94,11 @@ export function LocationStatus({ onResolved, onConsentDecision, onVerifyDecision
     try {
       const place = await getDeviceLocation(navigator.geolocation);
       onResolved(place);
-      setResult(`Device location: ${place.city}, ${place.country}`);
+      setResult("");
+      return true;
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Location is unavailable. Please try again later.");
+      return false;
     } finally {
       busy.current = false;
       setPending(false);
@@ -116,8 +118,7 @@ export function LocationStatus({ onResolved, onConsentDecision, onVerifyDecision
     verifying={verifying}
     onAllow={async () => {
       if (!await confirmDecision()) return;
-      setConsentOpen(false);
-      void locate();
+      if (await locate()) setConsentOpen(false);
     }}
   />;
 }

@@ -44,6 +44,7 @@ export function Counter() {
 	const [tapToken, setTapToken] = useState<string | null>(null);
 	const turnstile = useRef<TurnstileHandle>(null);
 	const verifiedSession = useRef(false);
+	const verificationAttempt = useRef<Promise<void> | null>(null);
 	const [sharedBattle, setSharedBattle] = useState<SharedBattle>(null);
 	const [milestone, setMilestone] = useState<Milestone | null>(null);
 	const [rankingLoading, setRankingLoading] = useState(true);
@@ -115,6 +116,8 @@ export function Counter() {
 
 	const verifyTapSession = useCallback(async () => {
 		if (verifiedSession.current) return;
+		if (verificationAttempt.current) return verificationAttempt.current;
+		const attempt = (async () => {
 		if (!tapToken) throw new Error("Tap session is still loading. Please try again.");
 		const token = await turnstile.current?.getToken();
 		if (!token) throw new Error("Bot verification is still loading.");
@@ -126,13 +129,26 @@ export function Counter() {
 		turnstile.current?.reset();
 		if (!response.ok) throw new Error("Bot verification failed. Please try again.");
 		verifiedSession.current = true;
+		})();
+		verificationAttempt.current = attempt;
+		try {
+			await attempt;
+		} finally {
+			verificationAttempt.current = null;
+		}
 	}, [tapToken]);
+
+	useEffect(() => {
+		if (!tapToken || verifiedSession.current) return;
+		void verifyTapSession().catch(() => undefined);
+	}, [tapToken, verifyTapSession]);
 
 	async function tap() {
 		if (!consentDecided) {
 			setConsentRequest((request) => request + 1);
 			return;
 		}
+		if (rankingLoading || !tapToken) return;
 		setTapError(null);
 		if (!muted) beep();
 		const ringId = Date.now() + Math.random();
@@ -252,6 +268,7 @@ export function Counter() {
 					<button
 						className={`${styles.button} ${buttonPressed ? styles.buttonPressed : ""}`}
 						onClick={tap}
+						disabled={rankingLoading || !tapToken}
 						onPointerDown={() => { if (consentDecided) setButtonPressed(true); }}
 						onPointerUp={(event) => { setButtonPressed(false); event.currentTarget.blur(); }}
 						onPointerCancel={() => setButtonPressed(false)}

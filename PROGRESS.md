@@ -1,3 +1,9 @@
+## 2026-09-30 — SEO foundation
+
+- [x] Add canonical metadata, social cards, robots directives, and JSON-LD
+- [x] Add crawlable sitemap and robots endpoints
+- [x] Improve page titles, descriptions, and homepage heading
+
 ## 2026-09-30 — Unused code cleanup
 
 - [x] Remove redundant IP2Location dependency, adapter, and environment setting
