@@ -1,10 +1,9 @@
-import Link from "next/link";
 import styles from "../legal.module.css";
 
 export const metadata = { title: "Privacy Policy · tapwars.world" };
 
 export default function PrivacyPage() {
-  return <main className={styles.page}><div className={styles.shell}><Link className={styles.back} href="/">‹ Back</Link><article className={styles.content}>
+  return <main className={styles.page}><div className={styles.shell}><article className={styles.content}>
     <h1>Privacy Policy</h1><p className={styles.updated}>Last updated September 30, 2026</p>
     <p>tapwars.world is a public country tap counter. This policy explains what the service uses to attribute taps and operate the ranking.</p>
     <p>In this policy, “the service” means the tapwars.world website, its rankings, battles, APIs, and related features.</p>

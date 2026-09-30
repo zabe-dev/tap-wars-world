@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./counter.module.css";
 import { countryCode, flag, getTopCountries, toCounts } from "./countries";
-import { HeaderControls } from "./header-controls";
+import { useSound } from "./site-controls";
 import { Ranking } from "./ranking";
 import { getVisitorLocation } from "./visitor-location";
 import { LoadingDots } from "./loading-dots";
@@ -33,7 +33,7 @@ export function Counter() {
 	const [total, setTotal] = useState(0);
 	const [counts, setCounts] = useState(initialCounts);
 	const [toasts, setToasts] = useState<Toast[]>([]);
-	const [muted, setMuted] = useState(false);
+	const { muted } = useSound();
 	const [tapError, setTapError] = useState<string | null>(null);
 	const [highlightCountry, setHighlightCountry] = useState<string | null>(null);
 	const [visitorCountry, setVisitorCountry] = useState<string | null>(null);
@@ -225,14 +225,13 @@ export function Counter() {
 
 	return (
 		<main className={styles.page}>
-			<HeaderControls muted={muted} onToggleSound={() => setMuted((value) => !value)} />
 			<div className={styles.content}>
 				<section className={styles.hero}>
+					{!rankingLoading && <p className={styles.nextGoal}>Next goal: {nextMilestone(total).toLocaleString("en-US")} taps</p>}
 					<div className={styles.count} aria-live="polite" aria-busy={rankingLoading}>
 						{rankingLoading ? <LoadingDots label="Loading total taps" /> : <span title={total.toLocaleString("en-US")}>{total.toLocaleString("en-US")}</span>}
 					</div>
 					<p>taps from around the world</p>
-					{!rankingLoading && <p className={styles.nextGoal}>Next goal: {nextMilestone(total).toLocaleString("en-US")} taps</p>}
 				</section>
 				<div className={styles.stage}>
 					{rings.map((id) => (

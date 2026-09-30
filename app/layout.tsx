@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { SiteFooter } from "./_components/site-footer";
+import { SiteControls, SiteControlsProvider } from "./_components/site-controls";
 
 export const metadata: Metadata = {
   title: "tapwars.world",
@@ -19,7 +20,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: themeBootstrap }} /></head>
-      <body>{children}<SiteFooter /></body>
+      <body><SiteControlsProvider><SiteControls />{children}</SiteControlsProvider><SiteFooter /></body>
     </html>
   );
 }
