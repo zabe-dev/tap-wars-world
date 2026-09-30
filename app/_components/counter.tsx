@@ -9,6 +9,7 @@ import { getVisitorLocation } from "./visitor-location";
 import { LoadingDots } from "./loading-dots";
 import { CountryMission } from "./country-mission";
 import { MilestoneConfetti } from "./milestone-confetti";
+import { MILESTONE_TARGETS } from "./milestone-targets";
 
 type Place = [city: string, country: string];
 type Toast = { id: number; place: Place; mine: boolean; dx: number; dy: number };
@@ -22,6 +23,10 @@ const initialCounts: Record<string, number> = {};
 
 function totalFor(ranking: RankingEntry[]) {
 	return ranking.reduce((sum, entry) => sum + entry.count, 0);
+}
+
+function nextMilestone(total: number) {
+	return MILESTONE_TARGETS.find((target) => target > total) ?? MILESTONE_TARGETS[MILESTONE_TARGETS.length - 1];
 }
 
 export function Counter() {
@@ -227,6 +232,7 @@ export function Counter() {
 						{rankingLoading ? <LoadingDots label="Loading total taps" /> : <span title={total.toLocaleString("en-US")}>{total.toLocaleString("en-US")}</span>}
 					</div>
 					<p>taps from around the world</p>
+					{!rankingLoading && <p className={styles.nextGoal}>Next goal: {nextMilestone(total).toLocaleString("en-US")} taps</p>}
 				</section>
 				<div className={styles.stage}>
 					{rings.map((id) => (

@@ -2,9 +2,9 @@ import { desc } from "drizzle-orm";
 import { db } from "./db";
 import { milestones } from "./db/schema";
 import type { RankingEntry } from "./counter-store";
+import { MILESTONE_TARGETS } from "@/app/_components/milestone-targets";
 
-const PRODUCTION_TARGETS = [10_000, 100_000, 1_000_000, 5_000_000, 25_000_000, 100_000_000, 250_000_000, 500_000_000, 750_000_000, 999_999_999];
-export const MILESTONE_TARGETS = PRODUCTION_TARGETS;
+export { MILESTONE_TARGETS };
 const recordedMilestones = new Set<number>();
 const fallbackMilestones = new Map<number, MilestoneSnapshot>();
 
