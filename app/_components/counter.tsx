@@ -70,11 +70,18 @@ export function Counter() {
 
 	useEffect(() => {
 		const events = new EventSource("/api/activity/stream");
+		events.addEventListener("battle", (event) => {
+			try {
+				setSharedBattle(JSON.parse((event as MessageEvent<string>).data) as SharedBattle);
+			} catch {
+				/* Ignore malformed battle events. */
+			}
+		});
 		events.addEventListener("tap", (event) => {
 			try {
 				const activity = JSON.parse((event as MessageEvent<string>).data) as { city?: string; country?: string; clientId?: string; battle?: SharedBattle };
-				if (!activity.city || !activity.country || activity.clientId === clientId.current) return;
 				if (activity.battle !== undefined) setSharedBattle(activity.battle);
+				if (!activity.city || !activity.country || activity.clientId === clientId.current) return;
 				const code = countryCode(activity.country);
 				showToast([activity.city, code], false);
 				setHighlightCountry(code);

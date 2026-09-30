@@ -35,6 +35,12 @@ app.get("/battle", async (context) => context.json({ battle: await getActiveBatt
 
 app.get("/activity/stream", (context) => streamSSE(context, async (stream) => {
 		await stream.writeSSE({ event: "ready", data: "{}" });
+		try {
+			const battle = await getActiveBattle(await getStoredRanking());
+			if (battle) await stream.writeSSE({ event: "battle", data: JSON.stringify(battle) });
+		} catch {
+			/* The activity stream remains available if the initial battle read fails. */
+		}
 		await new Promise<void>((resolve) => {
 			const unsubscribe = subscribeActivity((activity) => {
 				void stream.writeSSE({ event: "tap", data: JSON.stringify(activity) });
