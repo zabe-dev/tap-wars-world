@@ -43,10 +43,12 @@ export function Counter() {
 	const [settlement, setSettlement] = useState<Settlement>(null);
 	const [settlementOrder, setSettlementOrder] = useState<string[] | null>(null);
 	const [milestone, setMilestone] = useState<Milestone | null>(null);
+	const [totalPulse, setTotalPulse] = useState(0);
 	const pendingRankingRef = useRef<RankingEntry[] | null>(null);
 	const pendingTotalRef = useRef(0);
 	const [rankingLoading, setRankingLoading] = useState(true);
 	const [rings, setRings] = useState<number[]>([]);
+	const [buttonPressed, setButtonPressed] = useState(false);
 	const audio = useRef<AudioContext | null>(null);
 	const soundStep = useRef(0);
 	const clientId = useRef(Math.random().toString(36).slice(2));
@@ -82,6 +84,7 @@ export function Counter() {
 					setCounts((current) => ({ ...current, [code]: (current[code] ?? 0) + 1 }));
 					setTotal((current) => current + 1);
 				}
+				setTotalPulse((current) => current + 1);
 				void fetch("/api/ranking", { cache: "no-store" }).then((response) => response.json()).then((data: { ranking: RankingEntry[] }) => {
 					if (battleActiveRef.current) return;
 					setCounts(toCounts(data.ranking));
@@ -151,6 +154,7 @@ export function Counter() {
 				setCounts(nextCounts);
 				setTotal(totalFor(data.ranking));
 			}
+			setTotalPulse((current) => current + 1);
 			setHighlightCountry(country);
 			setTapEvent({ id: Date.now() + Math.random(), country });
 			window.setTimeout(() => setHighlightCountry(null), 700);
@@ -216,7 +220,7 @@ export function Counter() {
 			<div className={styles.content}>
 				<section className={styles.hero}>
 					<div className={styles.count} aria-live="polite" aria-busy={rankingLoading}>
-						{rankingLoading ? <LoadingDots label="Loading total taps" /> : <span title={total.toLocaleString("en-US")}>{total.toLocaleString("en-US")}</span>}
+						{rankingLoading ? <LoadingDots label="Loading total taps" /> : <span key={totalPulse} className={totalPulse ? styles.countFlash : undefined} title={total.toLocaleString("en-US")}>{total.toLocaleString("en-US")}</span>}
 					</div>
 					<p>taps from around the world</p>
 				</section>
@@ -228,8 +232,13 @@ export function Counter() {
 						<Toast key={toast.id} toast={toast} />
 					))}
 					<button
-						className={styles.button}
+						className={`${styles.button} ${buttonPressed ? styles.buttonPressed : ""}`}
 						onClick={tap}
+						onPointerDown={() => setButtonPressed(true)}
+						onPointerUp={(event) => { setButtonPressed(false); event.currentTarget.blur(); }}
+						onPointerCancel={() => setButtonPressed(false)}
+						onKeyDown={(event) => { if (event.key === " " || event.key === "Enter") setButtonPressed(true); }}
+						onKeyUp={() => setButtonPressed(false)}
 						aria-label="Add your tap to tapwars.world"
 					>
 						TAP
