@@ -36,9 +36,9 @@ function Battle({ left, right, scores }: { left: string; right: string; scores: 
   const leftWidth = Math.max(0, Math.min(100, 50 + ((leftScore - rightScore) / BATTLE_SWING) * 50));
   return <section className={styles.card} aria-label="Country battle mission">
     <div className={styles.teams}>
-      <div className={styles.team}><span className={styles.identity}><span className={styles.flag}>{flag(left)}</span><span><b>{countryName(left)}</b><small>{formatCount(leftScore)} battle taps</small></span></span></div>
+      <div className={styles.team}><span className={styles.identity}><span className={styles.flag}>{flag(left)}</span><span><b>{countryName(left)}</b><small>{formatCount(leftScore)} taps</small></span></span></div>
       <span className={styles.vs}>VS</span>
-      <div className={`${styles.team} ${styles.teamRight}`}><span className={styles.identity}><span><b>{countryName(right)}</b><small>{formatCount(rightScore)} battle taps</small></span><span className={styles.flag}>{flag(right)}</span></span></div>
+      <div className={`${styles.team} ${styles.teamRight}`}><span className={styles.identity}><span><b>{countryName(right)}</b><small>{formatCount(rightScore)} taps</small></span><span className={styles.flag}>{flag(right)}</span></span></div>
     </div>
     <div className={styles.track} aria-label={`${countryName(left)} versus ${countryName(right)}`}>
       <span className={styles.leftTeam} style={{ width: `${leftWidth}%` }} />

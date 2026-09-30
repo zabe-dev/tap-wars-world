@@ -12,7 +12,11 @@ import { getVisitorLocation } from "./visitor-location";
 
 const REMEMBER_KEY = "tapwars:location-consent-remembered";
 
-export function LocationStatus({ onResolved }: { onResolved: (location: DeviceLocation) => void }) {
+export function LocationStatus({ onResolved, onConsentDecision, consentRequest = 0 }: {
+  onResolved: (location: DeviceLocation) => void;
+  onConsentDecision?: () => void;
+  consentRequest?: number;
+}) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState("");
@@ -32,10 +36,15 @@ export function LocationStatus({ onResolved }: { onResolved: (location: DeviceLo
       const remembered = hasRememberedLocationConsent(localStorage.getItem(REMEMBER_KEY));
       if (!remembered) localStorage.removeItem(REMEMBER_KEY);
       setConsentOpen(!remembered);
+      if (remembered) onConsentDecision?.();
     } catch {
       setConsentOpen(true);
     }
-  }, []);
+  }, [onConsentDecision]);
+
+  useEffect(() => {
+    if (consentRequest > 0) setConsentOpen(true);
+  }, [consentRequest]);
 
   function saveRememberChoice(remember: boolean) {
     try {
@@ -48,7 +57,12 @@ export function LocationStatus({ onResolved }: { onResolved: (location: DeviceLo
 
   function dismissConsent() {
     setConsentOpen(false);
+    onConsentDecision?.();
     saveRememberChoice(rememberChoice);
+  }
+
+  function closeConsent() {
+    setConsentOpen(false);
   }
 
   async function locate() {
@@ -82,6 +96,7 @@ export function LocationStatus({ onResolved }: { onResolved: (location: DeviceLo
     rememberChoice={rememberChoice}
     onRememberChange={setRememberChoice}
     onDismiss={dismissConsent}
-    onAllow={() => { saveRememberChoice(rememberChoice); void locate(); }}
+    onClose={closeConsent}
+    onAllow={() => { onConsentDecision?.(); saveRememberChoice(rememberChoice); void locate(); }}
   />;
 }

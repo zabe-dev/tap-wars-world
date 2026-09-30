@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { countryCapital } from "../../country-capitals";
 import styles from "./counter.module.css";
 import { countryCode, flag, toCounts } from "./countries";
@@ -38,12 +38,15 @@ export function Counter() {
 	const [highlightCountry, setHighlightCountry] = useState<string | null>(null);
 	const [visitorCountry, setVisitorCountry] = useState<string | null>(null);
 	const [deviceLocation, setDeviceLocation] = useState<DeviceLocation | null>(null);
+	const [consentDecided, setConsentDecided] = useState(false);
+	const [consentRequest, setConsentRequest] = useState(0);
 	const [tapToken, setTapToken] = useState<string | null>(null);
 	const [sharedBattle, setSharedBattle] = useState<SharedBattle>(null);
 	const [milestone, setMilestone] = useState<Milestone | null>(null);
 	const [rankingLoading, setRankingLoading] = useState(true);
 	const [rings, setRings] = useState<number[]>([]);
 	const [buttonPressed, setButtonPressed] = useState(false);
+	const markConsentDecided = useCallback(() => setConsentDecided(true), []);
 	const audio = useRef<AudioContext | null>(null);
 	const soundStep = useRef(0);
 	const clientId = useRef(Math.random().toString(36).slice(2));
@@ -108,6 +111,10 @@ export function Counter() {
 	}
 
 	async function tap() {
+		if (!consentDecided) {
+			setConsentRequest((request) => request + 1);
+			return;
+		}
 		setTapError(null);
 		if (!muted) beep();
 		const ringId = Date.now() + Math.random();
@@ -225,10 +232,10 @@ export function Counter() {
 					<button
 						className={`${styles.button} ${buttonPressed ? styles.buttonPressed : ""}`}
 						onClick={tap}
-						onPointerDown={() => setButtonPressed(true)}
+						onPointerDown={() => { if (consentDecided) setButtonPressed(true); }}
 						onPointerUp={(event) => { setButtonPressed(false); event.currentTarget.blur(); }}
 						onPointerCancel={() => setButtonPressed(false)}
-						onKeyDown={(event) => { if (event.key === " " || event.key === "Enter") setButtonPressed(true); }}
+						onKeyDown={(event) => { if (consentDecided && (event.key === " " || event.key === "Enter")) setButtonPressed(true); }}
 						onKeyUp={() => setButtonPressed(false)}
 						aria-label="Add your tap to tapwars.world"
 					>
@@ -242,7 +249,7 @@ export function Counter() {
 				<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={highlightCountry} />
 			</div>
 			{milestone && <MilestoneConfetti key={milestone.tapTotal} onComplete={() => setMilestone(null)} />}
-			<LocationStatus onResolved={(place) => {
+			<LocationStatus consentRequest={consentRequest} onConsentDecision={markConsentDecided} onResolved={(place) => {
 				setDeviceLocation(place);
 				setVisitorCountry(countryCode(place.country));
 			}} />

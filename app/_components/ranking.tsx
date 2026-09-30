@@ -17,7 +17,7 @@ export function Ranking({ ranking, loading, highlightedCountry }: { ranking: [st
     return () => window.clearInterval(timer);
   }, []);
   const utcLabel = utcNow
-    ? `${new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(utcNow)} UTC`
+    ? `${new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" }).format(utcNow)} UTC`
     : "UTC";
   return (
     <section className={styles.board} aria-labelledby="ranking-title">

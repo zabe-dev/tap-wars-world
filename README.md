@@ -48,6 +48,7 @@ Location responses are private and must never be cached by a CDN.
 VPNs report the exit location, not necessarily the visitor's physical country.
 Verify after deployment
 using a public connection: `POST /api/tap` returns the detected city/country.
+Use `GET /api/health` for a lightweight API availability check.
 Vercel-specific location headers are no longer used.
 
 When you visit the site, a modal offers **Use my location** or **Not now**. It

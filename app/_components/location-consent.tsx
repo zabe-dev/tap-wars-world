@@ -5,10 +5,11 @@ import { Icon } from "@iconify/react";
 import { motion, useReducedMotion } from "motion/react";
 import styles from "./location-consent.module.css";
 
-export function LocationConsent({ open, onAllow, onDismiss, pending = false, result = "", error = "", approximate = "", rememberChoice = false, onRememberChange }: {
+export function LocationConsent({ open, onAllow, onDismiss, onClose, pending = false, result = "", error = "", approximate = "", rememberChoice = false, onRememberChange }: {
   open: boolean;
   onAllow: () => void;
   onDismiss: () => void;
+  onClose?: () => void;
   pending?: boolean;
   result?: string;
   error?: string;
@@ -25,19 +26,31 @@ export function LocationConsent({ open, onAllow, onDismiss, pending = false, res
     if (open) {
       element.showModal();
       element.focus();
+      const previousBodyOverflow = document.body.style.overflow;
+      const previousDocumentOverflow = document.documentElement.style.overflow;
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = previousBodyOverflow;
+        document.documentElement.style.overflow = previousDocumentOverflow;
+        element.close();
+      };
     }
-    else element.close();
-    return () => { element.close(); };
+    element.close();
+    return undefined;
   }, [open]);
 
   return <dialog ref={dialog} tabIndex={-1} autoFocus className={styles.dialog} aria-labelledby="location-consent-title"
-    aria-describedby="location-consent-description" onCancel={(event) => { event.preventDefault(); onDismiss(); }}>
+    aria-describedby="location-consent-description" onClick={(event) => { if (event.target === event.currentTarget) onClose?.(); }} onCancel={(event) => { event.preventDefault(); onClose?.(); }}>
     <motion.div
       className={styles.card}
       initial={reducedMotion ? false : { opacity: 0, y: 8, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
     >
+      <button type="button" className={styles.close} onClick={onClose} aria-label="Close location permission dialog">
+        <Icon icon="lucide:x" aria-hidden="true" />
+      </button>
       <div className={styles.icon} aria-hidden="true"><Icon icon="lucide:map-pin" /></div>
       <p className={styles.eyebrow}>GRANT PERMISSION</p>
       <h2 id="location-consent-title">{result ? "Location found" : "Use your device location?"}</h2>

@@ -11,6 +11,11 @@ import { getActiveBattle, recordBattleTap } from "./battles";
 
 const app = new Hono().basePath("/api");
 
+app.get("/health", (context) => {
+	context.header("Cache-Control", "no-store");
+	return context.json({ status: "ok" });
+});
+
 function isSameSiteOrigin(request: Request) {
 	const origin = request.headers.get("origin");
 	if (!origin) return false;

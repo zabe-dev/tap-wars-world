@@ -12,6 +12,14 @@ async function tapRequest(options: RequestInit = {}) {
 		headers: { ...(options.headers as Record<string, string> | undefined), origin: "http://localhost", cookie, "x-tap-token": tapToken },
 	});
 }
+
+test("health endpoint reports the API is available", async () => {
+  const response = await app.request("/api/health");
+  expect(response.status).toBe(200);
+  expect(response.headers.get("cache-control")).toBe("no-store");
+  expect(await response.json()).toEqual({ status: "ok" });
+});
+
 afterEach(() => {
   if (originalHops === undefined) delete process.env.TRUSTED_PROXY_HOPS;
   else process.env.TRUSTED_PROXY_HOPS = originalHops;

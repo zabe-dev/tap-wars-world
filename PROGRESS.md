@@ -330,3 +330,19 @@
 
 - [x] Use country capitals when IP or device geolocation has no city
 - [x] Cover capital fallback in server, browser, and activity displays
+
+## 2026-09-30 — Consent-gated tapping
+
+- [x] Open the consent modal when tapping before a location decision
+- [x] Keep tapping locked until the modal is answered or remembered
+- [x] Keep the mobile ranking header and UTC label on one row
+
+## 2026-09-30 — API health and battle copy
+
+- [x] Add `GET /api/health` availability check
+- [x] Shorten battle score labels to “X taps”
+
+## 2026-09-30 — Location modal controls
+
+- [x] Add a top-right close button and backdrop dismissal
+- [x] Lock page scrolling while the modal is open
