@@ -8,6 +8,7 @@ export default function PrivacyPage() {
     <Link className={styles.back} href="/">← Back to tapwars.world</Link>
     <h1>Privacy Policy</h1><p className={styles.updated}>Last updated September 30, 2026</p>
     <p>tapwars.world is a public country tap counter. This policy explains what the service uses to attribute taps and operate the ranking.</p>
+    <p>In this policy, “the service” means the tapwars.world website, its rankings, battles, APIs, and related features.</p>
     <h2>Information we receive</h2>
     <p>When you submit a tap, the server may receive your IP address through the hosting proxy. We use it to estimate a country and city with a local location database and to apply abuse limits. We do not request GPS permission, create accounts, or collect names, email addresses, or precise location.</p>
     <h2>Browser location fallback</h2>
