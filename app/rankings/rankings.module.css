@@ -1,6 +1,6 @@
 .page { min-height: 100vh; padding: 48px 20px; background: var(--bg); color: var(--ink); }
 .content { width: min(760px, 100%); margin: 0 auto; padding: 32px; border-radius: 20px; background: var(--card); }
-.back { color: var(--mute); font-size: 13px; text-decoration: none; }
+.back { display: flex; align-items: center; width: min(760px, 100%); margin: 0 auto 16px; padding: 10px 14px; border: 1px solid var(--bar); border-radius: 12px; background: var(--card); color: var(--ink); font-size: 13px; font-weight: 700; text-decoration: none; transition: border-color .2s ease, transform .2s ease; }.back:hover { border-color: var(--hot); transform: translateY(-1px); }.back:focus-visible { outline: 3px solid var(--hot); outline-offset: 3px; }
 .header { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin: 28px 0 20px; }.header h1 { margin: 0 0 6px; font-size: 32px; letter-spacing: -.04em; }.header p, .header > span, .empty { margin: 0; color: var(--mute); font-size: 13px; }
 .list { display: grid; grid-template-columns: 1fr; margin: 0; padding: 0; list-style: none; }
 .loading { display: grid; min-height: 1300px; place-items: center; }

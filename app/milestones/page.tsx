@@ -13,8 +13,7 @@ export default async function MilestonesPage() {
 	const displayMilestones = targets.map((tapTotal) => {
 		return recorded.find((milestone) => milestone.tapTotal === tapTotal) ?? { tapTotal, topTen: [], reachedAt: "", achieved: false };
 	});
-	return <main className={styles.page}><article className={styles.content}>
-		<Link className={styles.back} href="/">← Back to tapwars.world</Link>
+	return <main className={styles.page}><Link className={styles.back} href="/">← Back to tapwars.world</Link><article className={styles.content}>
 		<h1>Milestones</h1>
 		<p className={styles.intro}>See which countries led the world at each milestone.</p>
 		<MilestoneList milestones={displayMilestones} />
