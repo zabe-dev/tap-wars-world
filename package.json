@@ -17,6 +17,7 @@
     "drizzle-orm": "^0.45.3",
     "geoip-lite": "2.0.3",
     "hono": "latest",
+    "ip2location-nodejs": "^9.8.0",
     "motion": "latest",
     "next": "latest",
     "postgres": "^3.4.9",

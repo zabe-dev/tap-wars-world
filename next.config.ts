@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  serverExternalPackages: ["geoip-lite"],
+  serverExternalPackages: ["geoip-lite", "ip2location-nodejs"],
   allowedDevOrigins: ["127.0.0.1"],
   async headers() {
     return [{
