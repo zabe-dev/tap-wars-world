@@ -50,5 +50,7 @@ export function lookupLocation(ip: string | null) {
 /** Prefer the trusted proxy, falling back to the browser's public-IP discovery. */
 export function resolveLocation(headers: Headers, browserIp?: string) {
   const location = getVisitorLocation(headers);
-  return location.country !== "Worldwide" ? location : lookupLocation(browserIp ?? null);
+  if (location.country !== "Worldwide" && location.city.trim()) return location;
+  const browserLocation = lookupLocation(browserIp ?? null);
+  return browserLocation.country !== "Worldwide" ? browserLocation : location;
 }
