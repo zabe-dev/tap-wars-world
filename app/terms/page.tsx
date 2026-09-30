@@ -4,7 +4,7 @@ import styles from "../legal.module.css";
 export const metadata = { title: "Terms of Use · tapwars.world" };
 
 export default function TermsPage() {
-  return <main className={styles.page}><Link className={styles.back} href="/">← Back</Link><article className={styles.content}>
+  return <main className={styles.page}><div className={styles.shell}><Link className={styles.back} href="/">← Back</Link><article className={styles.content}>
     <h1>Terms of Use</h1><p className={styles.updated}>Last updated September 30, 2026</p>
     <p>By accessing or using tapwars.world, you acknowledge that you have read and agree to these Terms of Use. You also agree to use the service lawfully and in a way that does not interfere with other visitors or the service itself.</p>
     <p>In these terms, “the service” means the tapwars.world website, its rankings, battles, APIs, and related features.</p>
@@ -22,5 +22,5 @@ export default function TermsPage() {
     <p>To the extent permitted by law, the service is provided without warranties of accuracy, availability, fitness for a particular purpose, or uninterrupted operation. You use it at your own risk.</p>
     <h2>Contact</h2>
     <p>Questions about these terms should be sent to <a href="mailto:contact@tapwars.world">contact@tapwars.world</a>.</p>
-  </article></main>;
+  </article></div></main>;
 }

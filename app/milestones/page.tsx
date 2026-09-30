@@ -13,9 +13,9 @@ export default async function MilestonesPage() {
 	const displayMilestones = targets.map((tapTotal) => {
 		return recorded.find((milestone) => milestone.tapTotal === tapTotal) ?? { tapTotal, topTen: [], reachedAt: "", achieved: false };
 	});
-	return <main className={styles.page}><Link className={styles.back} href="/">← Back</Link><article className={styles.content}>
+	return <main className={styles.page}><div className={styles.shell}><Link className={styles.back} href="/">← Back</Link><article className={styles.content}>
 		<h1>Milestones</h1>
 		<p className={styles.intro}>See which countries led the world at each milestone.</p>
 		<MilestoneList milestones={displayMilestones} />
-	</article></main>;
+	</article></div></main>;
 }
