@@ -20,7 +20,7 @@
 ## 2026-09-30 — Production milestone ladder
 
 - [x] Start production milestones at 10,000 total taps
-- [x] Add widening 100k–999,999,999 milestone targets
+- [x] Add widening 100k–1,000,000,000 milestone targets
 - [x] Use the production ladder consistently across environments
 
 ## 2026-09-30 — Milestone track UI
