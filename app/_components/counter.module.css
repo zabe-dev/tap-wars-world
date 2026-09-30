@@ -7,7 +7,7 @@
 .tapGuide { position: absolute; left: 50%; top: 34%; z-index: 4; width: 56px; height: 56px; color: var(--ink); opacity: 0; pointer-events: none; animation: tap-guide 1.8s ease-in-out 5s infinite; animation-fill-mode: backwards; }
 .button:active .tapGuide, .buttonPressed .tapGuide { opacity: 0; animation-play-state: paused; }
 .button:disabled .tapGuide { opacity: 0; animation-play-state: paused; }
-@keyframes tap-guide { 0%, 100% { opacity: 0; transform: translate(-50%, -70%) scale(.9); } 25%, 65% { opacity: .85; transform: translate(-50%, -5%) scale(1); } 45% { opacity: .85; transform: translate(-50%, 15%) scale(.94); } }
+@keyframes tap-guide { 0%, 100% { opacity: 1; transform: translate(-50%, -70%) scale(.9); } 25%, 65% { opacity: 1; transform: translate(-50%, -5%) scale(1); } 45% { opacity: 1; transform: translate(-50%, 15%) scale(.94); } }
 .button:disabled { cursor: wait; opacity: .7; }
 .tapLabel, .nextGoal { user-select: none; -webkit-user-select: none; pointer-events: none; }.nextGoal { margin: 14px 0 0; color: var(--hot); font-size: 12px; font-weight: 700; }.hero .nextGoal { color: var(--hot); }
 .blurredCity { filter: blur(5px); user-select: none; }
