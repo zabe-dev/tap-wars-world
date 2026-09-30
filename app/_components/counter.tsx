@@ -197,10 +197,6 @@ export function Counter() {
 
 	return (
 		<main className={styles.page}>
-			<header className={styles.brand}>
-				<img src="/logo-256x256.png" alt="" width="40" height="40" />
-				<h1>Tap Wars World</h1>
-			</header>
 			<div className={styles.content}>
 				<section className={styles.hero}>
 					{!rankingLoading && <p className={styles.nextGoal}>Next goal: {nextMilestone(total).toLocaleString("en-US")} taps</p>}
