@@ -32,11 +32,6 @@ function nextMilestone(total: number) {
 	return MILESTONE_TARGETS.find((target) => target > total) ?? MILESTONE_TARGETS[MILESTONE_TARGETS.length - 1];
 }
 
-function milestoneProgress(total: number) {
-	const next = nextMilestone(total);
-	const previous = MILESTONE_TARGETS.slice().reverse().find((target) => target <= total) ?? 0;
-	return Math.min(100, Math.max(0, ((total - previous) / (next - previous)) * 100));
-}
 
 export function Counter() {
 	const [total, setTotal] = useState(0);
@@ -285,7 +280,6 @@ export function Counter() {
 					))}
 					<button
 						className={`${styles.button} ${buttonPressed ? styles.buttonPressed : ""}`}
-						style={{ "--progress": `${milestoneProgress(total)}%` } as React.CSSProperties}
 						onClick={tap}
 						disabled={rankingLoading || !tapToken || (requiresTapVerification && !tapSessionReady)}
 						onPointerDown={() => { if (consentDecided) setButtonPressed(true); }}
@@ -295,9 +289,10 @@ export function Counter() {
 						onKeyUp={() => setButtonPressed(false)}
 						aria-label={`Add your tap to tapwars.world. ${Math.max(0, nextMilestone(total) - total).toLocaleString("en-US")} taps remaining to the next milestone.`}
 					>
-						<small className={styles.nextGoal}>{new Intl.NumberFormat("en-US", { notation: "compact" }).format(nextMilestone(total)).toUpperCase()} milestone<br />{Math.max(0, nextMilestone(total) - total).toLocaleString("en-US")} taps remaining</small>
-						<Icon className={styles.tapGuide} icon="lucide:mouse-pointer-click" aria-hidden="true" />
+						<span className={styles.tapLabel}>TAP</span>
+						<Icon className={styles.tapGuide} icon="at-icons:tap" aria-hidden="true" />
 					</button>
+					<p className={styles.nextGoal}>{new Intl.NumberFormat("en-US", { notation: "compact" }).format(nextMilestone(total)).toUpperCase()} milestone · {Math.max(0, nextMilestone(total) - total).toLocaleString("en-US")} taps remaining</p>
 				</div>
 				<p className={`${styles.error} ${tapError ? styles.errorVisible : ""}`} role="alert" aria-live="polite">
 					{tapError ?? " "}
