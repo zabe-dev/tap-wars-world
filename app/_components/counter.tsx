@@ -236,7 +236,7 @@ export function Counter() {
 					setBattleParticipants(null);
 				}} />}
 				<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={battleActive ? null : highlightCountry} addedTaps={addedTaps} settlement={settlement} order={settlementOrder} />
-				<footer className={styles.footer}><span>© 2026 tapwars.world</span><nav><Link href="/milestones">Milestones</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></nav></footer>
+				<footer className={styles.footer}><span>© 2026 tapwars.world</span><nav><Link href="/rankings">Rankings</Link><Link href="/milestones">Milestones</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></nav></footer>
 			</div>
 			{milestone && <MilestoneConfetti key={milestone.tapTotal} onComplete={() => setMilestone(null)} />}
 		</main>
