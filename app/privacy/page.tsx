@@ -16,6 +16,8 @@ export default function PrivacyPage() {
     <p>If the server cannot see a trusted proxy address, your browser may request its public IP from a third-party location service and send that address to this service for an approximate lookup. That provider processes the request under its own privacy policy. VPNs, proxies, and mobile networks can produce an inaccurate location.</p>
     <h2>Storage and Retention</h2>
     <p>Accepted taps are stored as aggregated country totals in a database. We do not store individual tap records or IP addresses in the ranking database. Active battles and milestone snapshots are stored server-side so they can stay consistent for participating visitors. The derived city and country used for a tap become part of those aggregate totals and may not be removable individually. The site also uses a strictly necessary first-party cookie to validate tap sessions; it does not contain your name or contact details. Temporary rate-limit data is held in application memory and normally disappears when the service restarts.</p>
+    <h2>Anonymous Tap Display</h2>
+    <p>The anonymous-taps toggle blurs city names in activity toasts on your device. It is a display preference only: it does not change the location information used to attribute your tap or remove aggregated data from the ranking. The preference is stored in your browser’s local storage and is enabled by default.</p>
     <h2>Advertising</h2>
     <p>The service displays advertisements. Advertising providers may use cookies or similar technologies and may receive device or usage information according to their own privacy policies.</p>
     <h2>Service Providers</h2>

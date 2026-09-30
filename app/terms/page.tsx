@@ -11,6 +11,7 @@ export default function TermsPage() {
     <p>You may tap manually for personal use. Do not use scripts, bots, clickers, automated requests, multiple accounts or devices to manipulate rankings, bypass rate limits, overload the service, or interfere with another visitor’s use.</p>
     <h2>Rankings and Location</h2>
     <p>Country attribution is approximate and may be affected by VPNs, proxies, mobile networks, or unavailable location data. Optional device-location permission may use the derived device city and country for your taps; it does not provide identity verification. Rankings and battle results are informational, may be corrected or reset, and do not create a promise of rewards or recognition.</p>
+    <p>The optional anonymous-taps setting blurs city names in activity toasts on your device. It changes only what is displayed locally; it does not change tap attribution or the aggregated ranking.</p>
     <h2>Third-Party Services</h2>
     <p>The service may rely on third-party providers, including <a href="https://www.bigdatacloud.com/" target="_blank" rel="nofollow noreferrer">BigDataCloud</a> for location lookup, as well as providers for hosting, databases, and advertising. Those providers operate under their own terms and privacy policies. We are not responsible for their independent services, content, availability, or data practices.</p>
     <h2>Availability</h2>

@@ -60,7 +60,7 @@ export function SiteControls() {
 			<button type="button" className={styles.sound} onClick={toggleMuted} aria-label={muted ? "Turn sound on" : "Turn sound off"} aria-pressed={!muted}>
 				<Icon icon={muted ? "lucide:volume-x" : "lucide:volume-2"} aria-hidden="true" />
 			</button>
-			<button type="button" className={styles.sound} onClick={toggleAnonymous} aria-label={anonymous ? "Show cities in tap toasts" : "Hide cities in tap toasts"} aria-pressed={anonymous}>
+			<button type="button" className={styles.sound} onClick={toggleAnonymous} title={anonymous ? "Anonymous taps: city names are blurred in activity toasts" : "Show city names in activity toasts"} aria-label={anonymous ? "Show cities in tap toasts" : "Hide cities in tap toasts"} aria-pressed={anonymous}>
 				<Icon icon={anonymous ? "lucide:eye-off" : "lucide:eye"} aria-hidden="true" />
 			</button>
 			<button type="button" className={styles.sound} onClick={toggleTheme} aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}>
