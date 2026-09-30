@@ -291,7 +291,7 @@ export function Counter() {
 						aria-label={`Add your tap to tapwars.world. ${Math.max(0, nextMilestone(total) - total).toLocaleString("en-US")} taps remaining to the next milestone.`}
 					>
 						<span className={styles.tapLabel}>TAP</span>
-						<Icon className={styles.tapGuide} icon="at-icons:tap" aria-hidden="true" />
+						{!buttonPressed && <Icon className={styles.tapGuide} icon="at-icons:tap" aria-hidden="true" />}
 					</button>
 				</div>
 				<p className={`${styles.error} ${tapError ? styles.errorVisible : ""}`} role="alert" aria-live="polite">
