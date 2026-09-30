@@ -21,6 +21,7 @@ type RankingEntry = { country: string; count: number };
 type Milestone = { tapTotal: number; topTen: RankingEntry[] };
 type SharedBattle = { left: string; right: string; scores: Record<string, number>; frozen: Record<string, number>; completed?: boolean } | null;
 const initialCounts: Record<string, number> = {};
+const requiresTapVerification = process.env.NODE_ENV === "production";
 
 function totalFor(ranking: RankingEntry[]) {
 	return ranking.reduce((sum, entry) => sum + entry.count, 0);
@@ -42,6 +43,7 @@ export function Counter() {
 	const [consentDecided, setConsentDecided] = useState(false);
 	const [consentRequest, setConsentRequest] = useState(0);
 	const [tapToken, setTapToken] = useState<string | null>(null);
+	const [tapSessionReady, setTapSessionReady] = useState(false);
 	const turnstile = useRef<TurnstileHandle>(null);
 	const verifiedSession = useRef(false);
 	const verificationAttempt = useRef<Promise<void> | null>(null);
@@ -140,7 +142,17 @@ export function Counter() {
 
 	useEffect(() => {
 		if (!tapToken || verifiedSession.current) return;
-		void verifyTapSession().catch(() => undefined);
+		let cancelled = false;
+		const warmSession = async () => {
+			try {
+				await verifyTapSession();
+				if (!cancelled) setTapSessionReady(true);
+			} catch {
+				if (!cancelled) window.setTimeout(() => { void warmSession(); }, 500);
+			}
+		};
+		void warmSession();
+		return () => { cancelled = true; };
 	}, [tapToken, verifyTapSession]);
 
 	async function tap() {
@@ -148,7 +160,7 @@ export function Counter() {
 			setConsentRequest((request) => request + 1);
 			return;
 		}
-		if (rankingLoading || !tapToken) return;
+		if (rankingLoading || !tapToken || (requiresTapVerification && !tapSessionReady)) return;
 		setTapError(null);
 		if (!muted) beep();
 		const ringId = Date.now() + Math.random();
@@ -268,7 +280,7 @@ export function Counter() {
 					<button
 						className={`${styles.button} ${buttonPressed ? styles.buttonPressed : ""}`}
 						onClick={tap}
-						disabled={rankingLoading || !tapToken}
+						disabled={rankingLoading || !tapToken || (requiresTapVerification && !tapSessionReady)}
 						onPointerDown={() => { if (consentDecided) setButtonPressed(true); }}
 						onPointerUp={(event) => { setButtonPressed(false); event.currentTarget.blur(); }}
 						onPointerCancel={() => setButtonPressed(false)}
