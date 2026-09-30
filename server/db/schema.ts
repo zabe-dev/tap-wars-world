@@ -12,3 +12,14 @@ export const milestones = pgTable("milestones", {
 	topTen: jsonb("top_ten").notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const activeBattles = pgTable("active_battles", {
+	id: serial("id").primaryKey(),
+	leftCountry: text("left_country").notNull(),
+	rightCountry: text("right_country").notNull(),
+	leftFrozen: bigint("left_frozen", { mode: "number" }).notNull(),
+	rightFrozen: bigint("right_frozen", { mode: "number" }).notNull(),
+	leftScore: bigint("left_score", { mode: "number" }).notNull().default(0),
+	rightScore: bigint("right_score", { mode: "number" }).notNull().default(0),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

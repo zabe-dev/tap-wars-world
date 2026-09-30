@@ -1,3 +1,10 @@
+## 2026-09-30 — Shared country battles
+
+- [x] Persist one active battle and its frozen ranking values in PostgreSQL
+- [x] Count participant taps server-side toward the 250-tap battle goal
+- [x] Broadcast battle state through the existing SSE activity stream
+- [x] Remove browser-local battle persistence and scoring
+
 ## 2026-09-30 — Cross-user tap activity
 
 - [x] Broadcast accepted taps with PostgreSQL LISTEN/NOTIFY

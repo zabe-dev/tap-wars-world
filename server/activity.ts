@@ -1,6 +1,8 @@
 import { client } from "./db";
 
-export type TapActivity = { city: string; country: string; clientId?: string };
+import type { BattleState } from "./battles";
+
+export type TapActivity = { city: string; country: string; clientId?: string; battle?: BattleState | null };
 type Subscriber = (activity: TapActivity) => void;
 const subscribers = new Set<Subscriber>();
 let listenerStarted = false;

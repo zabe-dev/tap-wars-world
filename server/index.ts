@@ -7,6 +7,7 @@ import { listMilestones, recordMilestone } from "./milestones";
 import { getOrSetTapToken, validTapToken } from "./tap-token";
 import { publishActivity, subscribeActivity } from "./activity";
 import { streamSSE } from "hono/streaming";
+import { getActiveBattle, recordBattleTap } from "./battles";
 
 const app = new Hono().basePath("/api");
 
@@ -29,6 +30,8 @@ app.get("/ranking", async (context) => {
 });
 
 app.get("/milestones", async (context) => context.json({ milestones: await listMilestones() }));
+
+app.get("/battle", async (context) => context.json({ battle: await getActiveBattle(await getStoredRanking()) }));
 
 app.get("/activity/stream", (context) => streamSSE(context, async (stream) => {
 		await stream.writeSSE({ event: "ready", data: "{}" });
@@ -75,8 +78,9 @@ app.post("/tap", async (context) => {
 	const accepted = score.points === 1;
 	const ranking = await recordStoredTap(location.country, accepted ? 1 : 0);
 	const milestone = accepted ? await recordMilestone(ranking) : null;
-	if (accepted) await publishActivity({ city: location.city, country: location.country, clientId: context.req.header("x-client-id") });
-	return context.json({ ...location, ...score, accepted, ranking, milestone });
+	const battle = accepted ? await recordBattleTap(location.country, ranking) : await getActiveBattle(ranking);
+	if (accepted) await publishActivity({ city: location.city, country: location.country, clientId: context.req.header("x-client-id"), battle });
+	return context.json({ ...location, ...score, accepted, ranking, milestone, battle });
 });
 
 export default app;

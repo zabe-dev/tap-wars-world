@@ -17,6 +17,7 @@ type Milestone = { tapTotal: number; topTen: RankingEntry[] };
 type AddedTaps = { country: string; amount: number } | null;
 type Settlement = { country: string; total: number; consumed: number } | null;
 type TapEvent = { id: number; country: string } | null;
+type SharedBattle = { left: string; right: string; scores: Record<string, number>; frozen: Record<string, number>; completed?: boolean } | null;
 const initialCounts: Record<string, number> = {};
 
 function totalFor(ranking: RankingEntry[]) {
@@ -33,6 +34,7 @@ export function Counter() {
 	const [visitorCountry, setVisitorCountry] = useState<string | null>(null);
 	const [tapToken, setTapToken] = useState<string | null>(null);
 	const [tapEvent, setTapEvent] = useState<TapEvent>(null);
+	const [sharedBattle, setSharedBattle] = useState<SharedBattle>(null);
 	const [battleActive, setBattleActive] = useState(false);
 	const [battleParticipants, setBattleParticipants] = useState<[string, string] | null>(null);
 	const [pendingRanking, setPendingRanking] = useState<RankingEntry[] | null>(null);
@@ -62,17 +64,21 @@ export function Counter() {
 			})
 			.catch(() => undefined)
 			.finally(() => setRankingLoading(false));
+		void fetch("/api/battle", { cache: "no-store" }).then((response) => response.json()).then((data: { battle: SharedBattle }) => setSharedBattle(data.battle)).catch(() => undefined);
 	}, []);
 
 	useEffect(() => {
 		const events = new EventSource("/api/activity/stream");
 		events.addEventListener("tap", (event) => {
 			try {
-				const activity = JSON.parse((event as MessageEvent<string>).data) as { city?: string; country?: string; clientId?: string };
+				const activity = JSON.parse((event as MessageEvent<string>).data) as { city?: string; country?: string; clientId?: string; battle?: SharedBattle };
 				if (!activity.city || !activity.country || activity.clientId === clientId.current) return;
-				showToast([activity.city, countryCode(activity.country)], false);
+				if (activity.battle !== undefined) setSharedBattle(activity.battle);
+				const code = countryCode(activity.country);
+				showToast([activity.city, code], false);
+				setHighlightCountry(code);
+				window.setTimeout(() => setHighlightCountry((current) => current === code ? null : current), 700);
 				if (!battleActiveRef.current) {
-					const code = countryCode(activity.country);
 					setCounts((current) => ({ ...current, [code]: (current[code] ?? 0) + 1 }));
 					setTotal((current) => current + 1);
 				}
@@ -116,7 +122,7 @@ export function Counter() {
 				body: JSON.stringify(location.ip ? { ip: location.ip } : {}),
 			});
 			if (!response.ok) throw new Error("Tap failed");
-			const data: { city: string; country: string; ranking: RankingEntry[]; accepted: boolean; retryAfter: number; milestone: Milestone | null } =
+			const data: { city: string; country: string; ranking: RankingEntry[]; accepted: boolean; retryAfter: number; milestone: Milestone | null; battle: SharedBattle } =
 				await response.json();
 			if (!data.accepted) {
 				setTapError(`Too many taps in a short period. Try again in ${data.retryAfter}s.`);
@@ -124,6 +130,7 @@ export function Counter() {
 			}
 			const nextCounts = toCounts(data.ranking);
 			const country = countryCode(data.country);
+			setSharedBattle(data.battle);
 			if (data.milestone) {
 				setMilestone(data.milestone);
 				celebrate();
@@ -231,7 +238,7 @@ export function Counter() {
 				<p className={`${styles.error} ${tapError ? styles.errorVisible : ""}`} role="alert" aria-live="polite">
 					{tapError ?? " "}
 				</p>
-				{!rankingLoading && <CountryMission ranking={sorted} visitorCountry={visitorCountry} tapEvent={tapEvent} onBattleStart={(participants, frozen) => {
+				{!rankingLoading && <CountryMission ranking={sorted} visitorCountry={visitorCountry} sharedBattle={sharedBattle} onBattleStart={(participants, frozen) => {
 					setBattleActive(true); battleActiveRef.current = true; setBattleParticipants(participants);
 					const visibleRanking = sorted.map((entry) => { const code = countryCode(entry[0]); return participants.includes(code) ? [entry[0], frozen[code] ?? entry[1]] as [string, number] : entry; });
 					const visibleEntries = visibleRanking.map(([country, count]) => ({ country, count }));
@@ -254,7 +261,7 @@ export function Counter() {
 					if (added) {
 						setAddedTaps(added);
 						setSettlement({ country: added.country, total: added.amount, consumed: 0 });
-						const stepDelay = 45;
+						const stepDelay = 25;
 						for (let consumed = 1; consumed <= added.amount; consumed += 1) {
 							await new Promise((resolve) => window.setTimeout(resolve, stepDelay));
 							setSettlement({ country: added.country, total: added.amount, consumed });
