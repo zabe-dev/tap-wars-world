@@ -4,6 +4,7 @@ import { SiteFooter } from "./_components/site-footer";
 import { SiteControls, SiteControlsProvider } from "./_components/site-controls";
 
 export const metadata: Metadata = {
+	metadataBase: new URL("https://tapwars.world"),
 	title: "Tap Wars World",
 	description: "Tap around the world, climb global rankings, and help your country win battles. The perfect button for bored fingers and friendly global competition!",
 	twitter: {
