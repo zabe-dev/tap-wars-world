@@ -36,21 +36,41 @@ Never enable `forwardedHeaders.insecure` in production.
 Do not expose a route that bypasses the trusted proxy.
 
 When proxy location is unavailable (including localhost), the browser discovers
-its public IP directly through ipify once per page session, then sends that IP
+its public IP directly through ipify, then sends that IP
 to our server for local country lookup. No GPS permission is requested.
 ipify receives the browser's public IP as part of this request. If blocked,
 taps still count with an explicit unavailable-location message.
 The fallback is browser-reported and spoofable; never use it for authorization,
-prizes or fraud prevention. A valid trusted-proxy location always takes priority.
+prizes or fraud prevention. A valid trusted-proxy country always takes priority,
+even when its city is missing. Browser lookups are deduplicated, cached in memory
+for five minutes, and retried on demand after 30 seconds when unavailable.
+Location responses are private and must never be cached by a CDN.
 VPNs report the exit location, not necessarily the visitor's physical country.
 Verify after deployment
 using a public connection: `POST /api/tap` returns the detected city/country.
 Vercel-specific location headers are no longer used.
 
+On the first visit each UTC day, a modal offers **Use my location** or **Not now**.
+Dismissing or accepting stores the current UTC date locally. The choice resets
+at 00:00 UTC, including in open tabs; returning to a background tab rechecks the
+date. The modal appears again at the next UTC day. No browser permission is requested until the user
+chooses **Use my location**. That action requests browser location permission and
+sends current coordinates directly to BigDataCloud's free client-side reverse
+geocoding endpoint. It needs HTTPS (localhost is supported) and no API key.
+Coordinates are not sent to this app's server or saved in browser storage.
+Only the local location display changes; rankings and public tap activity still
+use server-resolved IP location. Denied permission preserves that fallback.
+Requests are user-triggered, limited to one attempt per 30 seconds, and never
+automatically retried. A missing city falls back to the provider's locality.
+Provider terms: https://www.bigdatacloud.com/docs/article/fair-use-policy-for-free-client-side-reverse-geocoding-api
+
 ## GeoIP data
 
 This product includes GeoLite data created by MaxMind, available from
 https://www.maxmind.com/. The bundled database can be stale.
+GeoLite cannot guarantee a city for every IP; update the data regularly rather
+than inventing cities. The former IP2Location adapter and
+`IP2LOCATION_DATABASE_PATH` setting have been removed.
 Before production, obtain a free MaxMind GeoLite license key and update:
 
 ```sh

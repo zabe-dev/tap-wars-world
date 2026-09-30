@@ -1,9 +1,8 @@
 .page { min-height: 100vh; padding: 92px 20px 48px; background: var(--bg); color: var(--ink); }
 .shell { width: min(760px, 100%); margin: 0 auto; }
 .content { width: min(760px, 100%); margin: 0 auto; padding: 32px; border-radius: 20px; background: var(--card); }
-.back { display: inline-flex; align-items: center; width: fit-content; margin: 0 auto 16px; padding: 8px 12px; border: 1px solid var(--hot); border-radius: 10px; background: var(--hot); color: #fff; font-size: 13px; font-weight: 800; text-decoration: none; transition: filter .2s ease, transform .2s ease; }.back:hover { filter: brightness(.9); transform: translateY(-1px); }.back:focus-visible { outline: 3px solid var(--hot); outline-offset: 3px; }
 .content h1 { margin: 28px 0 8px; font-size: 36px; letter-spacing: -.04em; }
-.intro, .empty { color: var(--mute); line-height: 1.6; }
+.intro { color: var(--mute); line-height: 1.6; }
 .list { display: grid; gap: 20px; margin-top: 28px; }
 .milestone { display: flex; align-items: center; justify-content: space-between; gap: 20px; width: 100%; padding: 20px; border: 2px solid var(--bar); border-radius: 16px; background: var(--card); color: var(--ink); text-align: left; cursor: pointer; transition: border-color .24s ease; }.milestone:hover:not(:disabled) { border-color: var(--hot); }.milestone:disabled { cursor: default; }.milestoneTotal { display: flex; align-items: baseline; gap: 8px; }.milestoneTotal strong { font-size: clamp(26px, 5vw, 36px); line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.05em; }.milestoneTotal > span { color: var(--mute); font-size: 13px; }.view { color: var(--hot) !important; font-weight: 850; font-size: 13px; white-space: nowrap; }.locked { opacity: .55; }
 .modal ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; margin: 18px 0 0; padding: 0; list-style: none; }.modal li { display: flex; align-items: center; gap: 8px; min-height: 38px; border-bottom: 1px solid var(--bar); font-size: 13px; }

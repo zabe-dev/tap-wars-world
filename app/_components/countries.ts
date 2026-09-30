@@ -29,6 +29,15 @@ export function countryName(country: string) {
   return country === "WW" ? "Location unknown" : regions.of(country) ?? country;
 }
 
+/** Show only usable city data, followed by the full country name. */
+export function locationLabel(city: string, country: string) {
+  if (country === "WW") return "Location unknown";
+  const cleanCity = city.trim();
+  const missing = ["", "unknown", "location unknown", "another location", "n/a", "na", "-"];
+  const name = countryName(country);
+  return missing.includes(cleanCity.toLowerCase()) || cleanCity === name ? name : `${cleanCity}, ${name}`;
+}
+
 export function flag(country: string) {
   if (country === "WW") return "🌐";
   return String.fromCodePoint(...[...country].map((letter) => 127397 + letter.charCodeAt(0)));

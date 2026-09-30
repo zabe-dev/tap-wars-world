@@ -1,4 +1,5 @@
-import { afterEach, expect, test } from "bun:test";
+import { afterEach, expect, spyOn, test } from "bun:test";
+import geoip from "geoip-lite";
 import app from "./index";
 
 const originalHops = process.env.TRUSTED_PROXY_HOPS;
@@ -14,6 +15,30 @@ async function tapRequest(options: RequestInit = {}) {
 afterEach(() => {
   if (originalHops === undefined) delete process.env.TRUSTED_PROXY_HOPS;
   else process.env.TRUSTED_PROXY_HOPS = originalHops;
+});
+
+test("visitor location responses cannot enter shared caches", async () => {
+  for (const options of [{}, { method: "POST", body: "{}" }]) {
+    const response = await app.request("/api/location", options);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+  }
+});
+
+test("missing proxy city never lets a browser change the trusted country", async () => {
+  process.env.TRUSTED_PROXY_HOPS = "1";
+  const lookup = spyOn(geoip, "lookup").mockImplementation((ip) => ({
+    range: [0, 0], country: ip === "8.8.8.8" ? "US" : "PH", region: "", eu: "0",
+    timezone: "", city: ip === "8.8.8.8" ? "" : "Manila", ll: [0, 0], metro: 0, area: 0,
+  }));
+  try {
+    const response = await app.request("/api/location", {
+      method: "POST", headers: { "x-forwarded-for": "8.8.8.8" }, body: JSON.stringify({ ip: "1.1.1.1" }),
+    });
+    expect(await response.json()).toEqual({ country: "United States", city: "" });
+    expect(lookup).toHaveBeenCalledTimes(1);
+  } finally {
+    lookup.mockRestore();
+  }
 });
 
 test("tap uses proxy IP and merges into the existing country ranking", async () => {

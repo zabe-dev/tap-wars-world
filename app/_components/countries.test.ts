@@ -1,5 +1,13 @@
 import { expect, test } from "bun:test";
-import { countryCode, countryName, flag, formatCount, getTopCountries, toCounts } from "./countries";
+import { countryCode, countryName, flag, formatCount, getTopCountries, locationLabel, toCounts } from "./countries";
+
+test("location labels show full countries without placeholder cities", () => {
+  expect(locationLabel("Manila", "PH")).toBe("Manila, Philippines");
+  for (const city of ["", "-", " N/A ", "Location unknown"]) {
+    expect(locationLabel(city, "PH")).toBe("Philippines");
+  }
+  expect(locationLabel("", "WW")).toBe("Location unknown");
+});
 
 test("countries outside the former short list keep their name and code", () => {
   expect(countryCode("Sweden")).toBe("SE");

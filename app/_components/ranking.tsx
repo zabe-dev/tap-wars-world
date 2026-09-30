@@ -9,7 +9,6 @@ import { LoadingDots } from "./loading-dots";
 export function Ranking({ ranking, loading, highlightedCountry }: { ranking: [string, number][]; loading: boolean; highlightedCountry?: string | null }) {
   const reduced = useReducedMotion();
   const [utcNow, setUtcNow] = useState<Date | null>(null);
-  const rankingMap = new Map(ranking);
   const countries = getTopCountries(ranking);
   useEffect(() => {
     const update = () => setUtcNow(new Date());

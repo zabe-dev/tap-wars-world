@@ -1,47 +1,58 @@
 import { z } from "zod";
 
-const locationSchema = z.object({ country: z.string(), city: z.string() });
+const locationSchema = z.object({ country: z.string().trim().min(1).max(200), city: z.string().trim().max(200) });
 const ipSchema = z.object({ ip: z.union([z.ipv4(), z.ipv6()]) });
-type VisitorLocation = { country: string; city: string; ip?: string };
+type VisitorLocation = z.infer<typeof locationSchema> & { ip?: string };
 const UNKNOWN: VisitorLocation = { country: "Worldwide", city: "Location unknown" };
 
-function hasUsableCity(location: VisitorLocation) {
-	return location.city.trim().length > 0 && !["unknown", "n/a", "na", "-"].includes(location.city.trim().toLowerCase());
+const LOCATION_TTL = 5 * 60_000;
+const FAILURE_TTL = 30_000;
+const REQUEST_TIMEOUT = 3000;
+
+/** Coalesce lookups, refresh expired results, and back off after failure. */
+export function createLocationResolver(request: typeof fetch = fetch, now = Date.now) {
+  let pending: Promise<VisitorLocation> | undefined;
+  let cached: VisitorLocation | undefined;
+  let expiresAt = 0;
+  return () => {
+    if (pending) return pending;
+    if (cached && now() < expiresAt) return Promise.resolve(cached);
+    pending = discoverLocation(request).then((location) => {
+      cached = location;
+      expiresAt = now() + (location.country === "Worldwide" ? FAILURE_TTL : LOCATION_TTL);
+      return location;
+    }).finally(() => { pending = undefined; });
+    return pending;
+  };
 }
 
-/** One shared lookup per page session, including concurrent tap requests. */
-export function createLocationResolver(request: typeof fetch = fetch) {
-  let pending: Promise<VisitorLocation> | undefined;
-  return () => pending ??= discoverLocation(request);
+async function requestLocation(request: typeof fetch, ip?: string): Promise<VisitorLocation> {
+  try {
+    const response = await request("/api/location", {
+      cache: "no-store", signal: AbortSignal.timeout(REQUEST_TIMEOUT),
+      ...(ip ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ip }) } : {}),
+    });
+    if (!response.ok) return UNKNOWN;
+    return { ...locationSchema.parse(await response.json()), ...(ip ? { ip } : {}) };
+  } catch {
+    // Keep taps and public-IP fallback available after a failed server lookup.
+    return UNKNOWN;
+  }
 }
 
 async function discoverLocation(request: typeof fetch): Promise<VisitorLocation> {
+  const location = await requestLocation(request);
+  if (location.country !== "Worldwide") return location;
+  // Another public IP cannot guarantee a city; discover only when country is missing.
   try {
-    const response = await request("/api/location", { signal: AbortSignal.timeout(3000) });
-    if (response.ok) {
-      const location = locationSchema.parse(await response.json());
-      if (location.country !== "Worldwide" && hasUsableCity(location)) return location;
-    }
-    // The browser contacts ipify directly so it returns the visitor's IP, not the server's.
-    let ip: string | null = null;
-    for (const endpoint of ["https://api64.ipify.org?format=json", "https://api.ipify.org?format=json"]) {
-      try {
-        const discovery = await request(endpoint, { signal: AbortSignal.timeout(4000), credentials: "omit", cache: "no-store" });
-        if (discovery.ok) { ip = ipSchema.parse(await discovery.json()).ip; break; }
-      } catch {
-        /* Try the alternate public-IP endpoint. */
-      }
-    }
-    if (!ip) return UNKNOWN;
-    const located = await request("/api/location", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ip }), signal: AbortSignal.timeout(3000),
+    const response = await request("https://api64.ipify.org?format=json", {
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT), credentials: "omit", cache: "no-store",
     });
-    if (!located.ok) return UNKNOWN;
-    return { ...locationSchema.parse(await located.json()), ip };
+    if (!response.ok) return location;
+    const { ip } = ipSchema.parse(await response.json());
+    return await requestLocation(request, ip);
   } catch {
-    // Location is optional: taps continue without attribution when discovery fails.
-    return UNKNOWN;
+    return location;
   }
 }
 

@@ -10,6 +10,7 @@ import { LoadingDots } from "./loading-dots";
 import { CountryMission } from "./country-mission";
 import { MilestoneConfetti } from "./milestone-confetti";
 import { MILESTONE_TARGETS } from "./milestone-targets";
+import { LocationStatus } from "./location-status";
 
 type Place = [city: string, country: string];
 type Toast = { id: number; place: Place; mine: boolean; dx: number; dy: number };
@@ -130,6 +131,7 @@ export function Counter() {
 			}
 			const nextCounts = toCounts(data.ranking);
 			const country = countryCode(data.country);
+			setVisitorCountry(country);
 			setSharedBattle(data.battle);
 			if (data.milestone) {
 				setMilestone(data.milestone);
@@ -232,6 +234,7 @@ export function Counter() {
 				<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={highlightCountry} />
 			</div>
 			{milestone && <MilestoneConfetti key={milestone.tapTotal} onComplete={() => setMilestone(null)} />}
+			<LocationStatus />
 		</main>
 	);
 }
@@ -240,6 +243,7 @@ function Toast({ toast }: { toast: Toast }) {
 	return (
 		<div
 			className={`${styles.toast} ${toast.mine ? styles.mine : ""}`}
+			title="Approximate location from IP address"
 			style={{ "--dx": `${toast.dx}px`, "--dy": `${toast.dy}px` } as React.CSSProperties}
 		>
 			<b>+1</b>

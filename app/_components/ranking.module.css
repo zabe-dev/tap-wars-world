@@ -12,7 +12,6 @@
 .flag { font-size: 22px; line-height: 1; }
 .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 700; }
 .score { display: inline-flex; align-items: center; gap: 8px; flex: none; font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; }
-.added { color: #16a36a; font-size: 12px; font-style: normal; font-weight: 800; white-space: nowrap; pointer-events: none; }
 .scoreFlash { display: inline-block; animation: score-flash .7s ease-out; }
 @keyframes score-flash { 0%, 100% { color: var(--ink); font-size: 14px; } 25%, 65% { color: var(--hot); font-size: 17px; } }
 @media (prefers-reduced-motion: reduce) { .scoreFlash { animation: none; color: var(--hot); } }

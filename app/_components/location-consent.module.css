@@ -1,0 +1,24 @@
+/* CSS Modules match the existing page styling. Native dialog owns focus and modality. */
+.dialog { width: min(420px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: visible; margin: auto; padding: 0; border: 0; outline: none; background: transparent; color: var(--ink); }
+.dialog::backdrop { background: #0d0828b8; backdrop-filter: blur(4px); }
+.card { padding: 28px; border: 1px solid color-mix(in srgb, var(--hot) 24%, var(--bar)); border-radius: 22px; background: var(--card); box-shadow: 0 26px 80px #0d082855; }
+.icon { display: grid; place-items: center; width: 38px; height: 38px; margin-bottom: 16px; border-radius: 12px; background: color-mix(in srgb, var(--hot) 15%, transparent); color: var(--hot); font-size: 20px; }
+.eyebrow { margin: 0 0 8px; color: var(--hot); font-size: 11px; font-weight: 850; letter-spacing: .13em; }
+.card h2 { margin: 0 0 10px; font-size: clamp(25px, 6vw, 32px); letter-spacing: -.045em; }
+.card p { margin: 0 0 12px; line-height: 1.55; }
+.disclosure { color: var(--mute); font-size: 13px; }
+.current { display: grid; gap: 2px; margin: 0 0 15px !important; padding: 12px 13px; border: 1px solid var(--bar); border-radius: 12px; background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.current span, .current small { color: var(--mute); font-size: 11px; }
+.current strong { font-size: 15px; }
+.result { padding: 12px 13px; border: 1px solid color-mix(in srgb, var(--hot) 25%, var(--bar)); border-radius: 12px; background: color-mix(in srgb, var(--hot) 8%, transparent); font-weight: 750; }
+.error { padding: 11px 13px; border-radius: 11px; background: color-mix(in srgb, #d92d55 12%, transparent); color: #c7274c; font-size: 13px; }
+.actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 9px; margin-top: 22px; }
+.actions button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 9px 13px; border: 1px solid var(--bar); border-radius: 10px; background: transparent; color: inherit; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: transform .16s ease, border-color .16s ease, background .16s ease; }
+.actions button:first-child { padding-inline: 10px; font-size: 12px; }
+.actions button svg { width: 16px; height: 16px; }
+.actions button:hover:not(:disabled) { transform: translateY(-1px); border-color: var(--hot); }
+.actions .allow { background: var(--hot); border-color: var(--hot); color: white; }
+.actions button:disabled { opacity: .6; cursor: wait; }
+.actions button:focus-visible { outline: 2px solid var(--hot); outline-offset: 3px; }
+@media (max-width: 520px) { .card { padding: 24px; } .actions { display: flex; } .actions button:first-child { flex: 0 0 auto; } .actions .allow { flex: 1; } }
+@media (prefers-reduced-motion: reduce) { .actions button { transition: none; } }

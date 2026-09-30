@@ -52,6 +52,11 @@ app.get("/activity/stream", (context) => streamSSE(context, async (stream) => {
 
 const locationInput = z.object({ ip: z.union([z.ipv4(), z.ipv6()]).optional() }).strict();
 
+app.use("/location", async (context, next) => {
+  context.header("Cache-Control", "private, no-store");
+  await next();
+});
+
 app.get("/location", (context) => context.json(getVisitorLocation(context.req.raw.headers)));
 
 app.post("/location", async (context) => {

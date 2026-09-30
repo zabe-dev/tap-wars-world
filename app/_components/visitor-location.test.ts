@@ -34,3 +34,49 @@ test("blocked discovery still allows unattributed taps", async () => {
   const request = (async () => { throw new Error("offline"); }) as unknown as typeof fetch;
   expect((await createLocationResolver(request)()).country).toBe("Worldwide");
 });
+
+test("country-only results avoid discovery and preserve attribution", async () => {
+  let calls = 0;
+  const request = (async () => {
+    calls++;
+    return Response.json({ country: "Philippines", city: "" });
+  }) as unknown as typeof fetch;
+  expect(await createLocationResolver(request)()).toEqual({ country: "Philippines", city: "" });
+  expect(calls).toBe(1);
+});
+
+test("failed initial lookup still attempts browser discovery", async () => {
+  let calls = 0;
+  const request = (async () => {
+    calls++;
+    if (calls === 1) throw new Error("timeout");
+    return Response.json(calls === 2 ? { ip: "8.8.8.8" } : { country: "United States", city: "" });
+  }) as unknown as typeof fetch;
+  expect((await createLocationResolver(request)()).country).toBe("United States");
+  expect(calls).toBe(3);
+});
+
+test("failed results back off then recover; successful results expire", async () => {
+  let time = 0;
+  let offline = true;
+  let calls = 0;
+  const request = (async () => {
+    calls++;
+    if (offline) throw new Error("offline");
+    return Response.json({ country: "Philippines", city: "Manila" });
+  }) as unknown as typeof fetch;
+  const resolve = createLocationResolver(request, () => time);
+  await resolve();
+  const failedCalls = calls;
+  offline = false;
+  expect((await resolve()).country).toBe("Worldwide");
+  expect(calls).toBe(failedCalls);
+  time = 30_000;
+  expect((await resolve()).city).toBe("Manila");
+  time += 299_999;
+  await resolve();
+  expect(calls).toBe(failedCalls + 1);
+  time++;
+  await Promise.all([resolve(), resolve()]);
+  expect(calls).toBe(failedCalls + 2);
+});

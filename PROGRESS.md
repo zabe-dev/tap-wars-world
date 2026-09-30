@@ -1,3 +1,17 @@
+## 2026-09-30 — Unused code cleanup
+
+- [x] Remove redundant IP2Location dependency, adapter, and environment setting
+- [x] Delete unused header-controls component; remove unused variables and CSS selectors
+- [x] Pass tests, unused-symbol check, and production build; removed code remains recoverable from Git
+
+## 2026-09-30 — Reliable approximate location
+
+- [x] Preserve trusted country attribution when city data is missing
+- [x] Bound browser caching and verify city/country display
+- [x] Add optional device location with browser-only BigDataCloud reverse geocoding
+- [x] Verify permission, provider failures, rendered location states, and mobile overflow
+- [x] Allow same-origin browser geolocation through Permissions-Policy
+
 ## 2026-09-30 — Shared-network city lookup
 
 - [x] Reject empty and placeholder city values from proxy location data
@@ -255,3 +269,43 @@
 - [x] Tap button with animated location toasts
 - [x] Podium and animated ranking rows
 - [ ] Replace in-memory store with PostgreSQL/Drizzle and shared rate limiting
+## 2026-09-30 — First-visit location consent
+
+- [x] Offer optional location in a first-visit modal; remember accept/dismiss for the UTC day
+- [x] Reset at 00:00 UTC in open tabs and recheck when background tabs become visible
+- [x] Request browser permission only on explicit consent; allow reopening later
+- [x] Browser proof: same-day reload stays dismissed; 00:00 UTC reopens; consent performs one lookup
+- [x] 38 tests, strict unused-symbol check, mobile layout, and production build pass
+## 2026-09-30 — Compact location toasts
+
+- [x] Abbreviate toast country names to ISO codes while keeping city names
+- [x] Keep full country names in consent and privacy explanations
+- [x] 38 tests and production build pass
+## 2026-09-30 — Development consent preview
+
+- [x] Show location consent on every fresh development page load
+- [x] Preserve once-per-UTC-day consent behavior in production
+## 2026-09-30 — Simpler location consent modal
+
+- [x] Reduce modal copy to one explanation and one disclosure
+- [x] Add Iconify icons to both actions
+- [x] Add subtle Framer Motion entrance with reduced-motion support
+- [x] Browser proof: modal shows two icon buttons and no inline location panel
+## 2026-09-30 — Modal IP estimate
+
+- [x] Show the captured IP-based city and country before requesting permission
+- [x] Clarify that the estimate needs no browser permission
+- [x] Make “Not now” compact relative to the primary action
+- [x] Browser proof confirms estimate text and compact button sizing
+## 2026-09-30 — Location consent wording
+
+- [x] Replace awkward “Show your city?” heading with “Use your device location?”
+## 2026-09-30 — Lightweight dismiss action
+
+- [x] Remove the initial focus ring from “Not now” only
+- [x] Focus the dialog itself on open; keep button borders and keyboard focus styling
+## 2026-09-30 — Location policy wording
+
+- [x] Align Privacy Policy with modal-only device location and development behavior
+- [x] Clarify in Terms that device location does not affect rankings
+- [x] Remove stale README wording about a location button

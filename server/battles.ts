@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { activeBattles } from "./db/schema";
 import { db } from "./db";
 import type { RankingEntry } from "./counter-store";

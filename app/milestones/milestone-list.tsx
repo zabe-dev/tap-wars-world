@@ -15,7 +15,7 @@ export function MilestoneList({ milestones }: { milestones: Milestone[] }) {
 		return () => window.removeEventListener("keydown", close);
 	}, [selected]);
 	return <>
-		<div className={styles.list}>{milestones.map((milestone) => { const achieved = milestone.achieved !== false; return <button className={`${styles.milestone} ${achieved ? styles.achieved : styles.locked}`} key={milestone.tapTotal} onClick={() => achieved && setSelected(milestone)} type="button" disabled={!achieved} aria-label={achieved ? `View top 10 at ${milestone.tapTotal.toLocaleString("en-US")} taps` : `${milestone.tapTotal.toLocaleString("en-US")} tap milestone unavailable`}>
+		<div className={styles.list}>{milestones.map((milestone) => { const achieved = milestone.achieved !== false; return <button className={`${styles.milestone} ${achieved ? "" : styles.locked}`} key={milestone.tapTotal} onClick={() => achieved && setSelected(milestone)} type="button" disabled={!achieved} aria-label={achieved ? `View top 10 at ${milestone.tapTotal.toLocaleString("en-US")} taps` : `${milestone.tapTotal.toLocaleString("en-US")} tap milestone unavailable`}>
 			<span className={styles.milestoneTotal}><strong>{milestone.tapTotal.toLocaleString("en-US")}</strong><span>total taps</span></span>
 			<span className={styles.view}>View top 10 <span aria-hidden="true">↗</span></span>
 		</button>; })}</div>
