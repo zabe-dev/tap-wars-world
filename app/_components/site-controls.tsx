@@ -17,7 +17,7 @@ export function useSound() {
 
 export function SiteControlsProvider({ children }: { children: React.ReactNode }) {
 	const [muted, setMuted] = useState(false);
-	const [anonymous, setAnonymous] = useState(false);
+	const [anonymous, setAnonymous] = useState(true);
 	useEffect(() => {
 		try { setAnonymous(localStorage.getItem("wc-anonymous-taps") === "true"); } catch { /* Optional preference. */ }
 	}, []);
