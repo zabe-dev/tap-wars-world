@@ -19,7 +19,10 @@ export function SiteControlsProvider({ children }: { children: React.ReactNode }
 	const [muted, setMuted] = useState(false);
 	const [anonymous, setAnonymous] = useState(true);
 	useEffect(() => {
-		try { setAnonymous(localStorage.getItem("wc-anonymous-taps") === "true"); } catch { /* Optional preference. */ }
+		try {
+			const saved = localStorage.getItem("wc-anonymous-taps");
+			setAnonymous(saved === null || saved === "true");
+		} catch { /* Optional preference. */ }
 	}, []);
 	function toggleAnonymous() {
 		setAnonymous((value) => {
