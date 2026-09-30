@@ -48,6 +48,7 @@ export function Counter() {
 	const audio = useRef<AudioContext | null>(null);
 	const soundStep = useRef(0);
 	const clientId = useRef(Math.random().toString(36).slice(2));
+	const battleActiveRef = useRef(false);
 	const sorted = useMemo(() => Object.entries(counts).sort((a, b) => b[1] - a[1]), [counts]);
 
 	useEffect(() => {
@@ -68,7 +69,18 @@ export function Counter() {
 		events.addEventListener("tap", (event) => {
 			try {
 				const activity = JSON.parse((event as MessageEvent<string>).data) as { country?: string; clientId?: string };
-				if (activity.country && activity.clientId !== clientId.current) showToast(["Another tap", countryCode(activity.country)], false);
+				if (!activity.country || activity.clientId === clientId.current) return;
+				showToast(["Another tap", countryCode(activity.country)], false);
+				if (!battleActiveRef.current) {
+					const code = countryCode(activity.country);
+					setCounts((current) => ({ ...current, [code]: (current[code] ?? 0) + 1 }));
+					setTotal((current) => current + 1);
+				}
+				void fetch("/api/ranking", { cache: "no-store" }).then((response) => response.json()).then((data: { ranking: RankingEntry[] }) => {
+					if (battleActiveRef.current) return;
+					setCounts(toCounts(data.ranking));
+					setTotal(totalFor(data.ranking));
+				}).catch(() => undefined);
 			} catch {
 				/* Ignore malformed activity events. */
 			}
@@ -220,13 +232,13 @@ export function Counter() {
 					{tapError ?? " "}
 				</p>
 				{!rankingLoading && <CountryMission ranking={sorted} visitorCountry={visitorCountry} tapEvent={tapEvent} onBattleStart={(participants, frozen) => {
-					setBattleActive(true); setBattleParticipants(participants);
+					setBattleActive(true); battleActiveRef.current = true; setBattleParticipants(participants);
 					const visibleRanking = sorted.map((entry) => { const code = countryCode(entry[0]); return participants.includes(code) ? [entry[0], frozen[code] ?? entry[1]] as [string, number] : entry; });
 					const visibleEntries = visibleRanking.map(([country, count]) => ({ country, count }));
 					setCounts(toCounts(visibleEntries)); setTotal(totalFor(visibleEntries));
 				}} onBattleComplete={async () => {
 					if (!pendingRanking || !battleParticipants) {
-						setBattleActive(false); setBattleParticipants(null);
+						setBattleActive(false); battleActiveRef.current = false; setBattleParticipants(null);
 						return;
 					}
 					const settlementRanking = pendingRankingRef.current ?? pendingRanking;
@@ -257,7 +269,7 @@ export function Counter() {
 					setPendingRanking(null);
 					pendingRankingRef.current = null;
 					pendingTotalRef.current = 0;
-					setBattleActive(false);
+					setBattleActive(false); battleActiveRef.current = false;
 					setBattleParticipants(null);
 				}} />}
 				<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={battleActive ? null : highlightCountry} addedTaps={addedTaps} settlement={settlement} order={settlementOrder} />
