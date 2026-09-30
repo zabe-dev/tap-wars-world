@@ -1,3 +1,9 @@
+## 2026-09-30 — Shared-network city lookup
+
+- [x] Reject empty and placeholder city values from proxy location data
+- [x] Retry browser public-IP discovery across both ipify endpoints
+- [x] Fall back to the browser-discovered IP when trusted proxy city data is incomplete
+
 ## 2026-09-30 — UTC world ranking header
 
 - [x] Rename the leaderboard heading to World Ranking
