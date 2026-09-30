@@ -7,6 +7,13 @@ export const metadata: Metadata = {
 	metadataBase: new URL("https://tapwars.world"),
 	title: "Tap Wars World",
 	description: "Tap around the world, climb global rankings, and help your country win battles. The perfect button for bored fingers and friendly global competition!",
+	openGraph: {
+		type: "website",
+		url: "https://tapwars.world/",
+		title: "Tap Wars World",
+		description: "Tap around the world, climb global rankings, and help your country win battles. The perfect button for bored fingers and friendly global competition!",
+		images: [{ url: "/logo-256x256.png", width: 256, height: 256, alt: "Tap Wars World" }],
+	},
 	twitter: {
 		card: "summary",
 		title: "Tap Wars World",
