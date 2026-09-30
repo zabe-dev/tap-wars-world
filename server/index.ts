@@ -51,6 +51,9 @@ app.get("/activity/stream", (context) => streamSSE(context, async (stream) => {
 	}));
 
 const locationInput = z.object({ ip: z.union([z.ipv4(), z.ipv6()]).optional() }).strict();
+const tapInput = locationInput.extend({
+  deviceLocation: z.object({ country: z.string().trim().min(1).max(200), city: z.string().trim().max(200) }).strict().optional(),
+}).strict();
 
 app.use("/location", async (context, next) => {
   context.header("Cache-Control", "private, no-store");
@@ -78,9 +81,9 @@ app.post("/tap", async (context) => {
 	if (body.length > 2048) return context.json({ error: { code: "PAYLOAD_TOO_LARGE", message: "Tap payload is too large." } }, 413);
   let raw: unknown = {};
   try { if (body) raw = JSON.parse(body); } catch { raw = null; }
-  const input = locationInput.safeParse(raw);
-	if (!input.success) return context.json({ error: { code: "INVALID_LOCATION", message: "Invalid IP address." } }, 400);
-	const location = resolveLocation(context.req.raw.headers, input.data.ip);
+  const input = tapInput.safeParse(raw);
+	if (!input.success) return context.json({ error: { code: "INVALID_LOCATION", message: "Invalid location data." } }, 400);
+	const location = resolveLocation(context.req.raw.headers, input.data.ip, input.data.deviceLocation);
 	// When running behind a configured proxy, rate-limit the server-observed address;
 	// never let a browser choose a new limiter key by changing its JSON payload.
 	const trustedIp = visitorIp(context.req.raw.headers, Number(process.env.TRUSTED_PROXY_HOPS ?? 0));

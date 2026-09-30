@@ -11,6 +11,7 @@ import { CountryMission } from "./country-mission";
 import { MilestoneConfetti } from "./milestone-confetti";
 import { MILESTONE_TARGETS } from "./milestone-targets";
 import { LocationStatus } from "./location-status";
+import type { DeviceLocation } from "./device-location";
 
 type Place = [city: string, country: string];
 type Toast = { id: number; place: Place; mine: boolean; dx: number; dy: number };
@@ -35,6 +36,7 @@ export function Counter() {
 	const [tapError, setTapError] = useState<string | null>(null);
 	const [highlightCountry, setHighlightCountry] = useState<string | null>(null);
 	const [visitorCountry, setVisitorCountry] = useState<string | null>(null);
+	const [deviceLocation, setDeviceLocation] = useState<DeviceLocation | null>(null);
 	const [tapToken, setTapToken] = useState<string | null>(null);
 	const [sharedBattle, setSharedBattle] = useState<SharedBattle>(null);
 	const [milestone, setMilestone] = useState<Milestone | null>(null);
@@ -112,7 +114,8 @@ export function Counter() {
 		setTimeout(() => setRings((value) => value.filter((id) => id !== ringId)), 800);
 		try {
 			const location = await getVisitorLocation();
-			setVisitorCountry(countryCode(location.country));
+			const displayLocation = deviceLocation ?? location;
+			setVisitorCountry(countryCode(displayLocation.country));
 			if (!tapToken) {
 				setTapError("Tap session is still loading. Please try again.");
 				return;
@@ -120,7 +123,10 @@ export function Counter() {
 			const response = await fetch("/api/tap", {
 				method: "POST",
 				headers: { "Content-Type": "application/json", "x-tap-token": tapToken, "x-client-id": clientId.current },
-				body: JSON.stringify(location.ip ? { ip: location.ip } : {}),
+				body: JSON.stringify({
+					...(location.ip ? { ip: location.ip } : {}),
+					...(deviceLocation ? { deviceLocation } : {}),
+				}),
 			});
 			if (!response.ok) throw new Error("Tap failed");
 			const data: { city: string; country: string; ranking: RankingEntry[]; accepted: boolean; retryAfter: number; milestone: Milestone | null; battle: SharedBattle } =
@@ -131,7 +137,8 @@ export function Counter() {
 			}
 			const nextCounts = toCounts(data.ranking);
 			const country = countryCode(data.country);
-			setVisitorCountry(country);
+			const ownLocation = deviceLocation ?? { city: data.city, country: data.country };
+			setVisitorCountry(countryCode(ownLocation.country));
 			setSharedBattle(data.battle);
 			if (data.milestone) {
 				setMilestone(data.milestone);
@@ -141,7 +148,7 @@ export function Counter() {
 			setTotal(totalFor(data.ranking));
 			setHighlightCountry(country);
 			window.setTimeout(() => setHighlightCountry(null), 700);
-			showToast([data.city, country], true);
+			showToast([ownLocation.city, countryCode(ownLocation.country)], true);
 		} catch {
 			setTapError("Tap could not be saved. Please try again.");
 		}
@@ -234,7 +241,10 @@ export function Counter() {
 				<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={highlightCountry} />
 			</div>
 			{milestone && <MilestoneConfetti key={milestone.tapTotal} onComplete={() => setMilestone(null)} />}
-			<LocationStatus />
+			<LocationStatus onResolved={(place) => {
+				setDeviceLocation(place);
+				setVisitorCountry(countryCode(place.country));
+			}} />
 		</main>
 	);
 }

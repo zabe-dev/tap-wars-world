@@ -9,10 +9,27 @@ const locationSchema = z.object({
 });
 const UNKNOWN = { country: "Worldwide", city: "Location unknown" };
 const regions = new Intl.DisplayNames(["en"], { type: "region" });
+const countryCodes = new Map<string, string>();
+for (let first = 65; first <= 90; first++) {
+  for (let second = 65; second <= 90; second++) {
+    const code = String.fromCharCode(first, second);
+    const name = regions.of(code);
+    if (name && name !== code) countryCodes.set(name.toLowerCase(), code);
+  }
+}
 
 function hasUsableCity(city: string) {
   const normalized = city.trim().toLowerCase();
   return normalized.length > 0 && !["unknown", "n/a", "na", "-"].includes(normalized);
+}
+
+function normalizeDeviceLocation(location?: { country: string; city: string }) {
+  if (!location) return null;
+  const country = location.country.trim();
+  const code = /^[A-Z]{2}$/.test(country) ? country : countryCodes.get(country.toLowerCase());
+  const city = location.city.trim();
+  if (!code || !regions.of(code) || !hasUsableCity(city)) return null;
+  return { country: regions.of(code) ?? country, city };
 }
 
 /** Select the visitor from the right of a trusted proxy chain; zero disables headers. */
@@ -52,8 +69,10 @@ export function lookupLocation(ip: string | null) {
   }
 }
 
-/** Prefer the trusted proxy, falling back to the browser's public-IP discovery. */
-export function resolveLocation(headers: Headers, browserIp?: string) {
+/** Use an explicitly approved device result, then fall back to public-IP lookup. */
+export function resolveLocation(headers: Headers, browserIp?: string, deviceLocation?: { country: string; city: string }) {
+  const deviceResult = normalizeDeviceLocation(deviceLocation);
+  if (deviceResult) return deviceResult;
   const location = getVisitorLocation(headers);
   if (location.country !== "Worldwide") return location;
   const browserLocation = lookupLocation(browserIp ?? null);

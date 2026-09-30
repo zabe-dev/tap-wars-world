@@ -77,6 +77,18 @@ test("localhost public-IP fallback increments the actual resolved country", asyn
   expect(taped.ranking.find((entry: { country: string }) => entry.country === location.country).count).toBe(previous + 1);
 });
 
+test("approved device location is used for the tap attribution", async () => {
+  process.env.TRUSTED_PROXY_HOPS = "0";
+  const response = await tapRequest({
+    method: "POST",
+    body: JSON.stringify({ deviceLocation: { country: "Philippines", city: "Angeles City" } }),
+  });
+  const data = await response.json();
+  expect(response.status).toBe(200);
+  expect(data.country).toBe("Philippines");
+  expect(data.city).toBe("Angeles City");
+});
+
 test("invalid browser input cannot change the ranking", async () => {
   const before = await (await app.request("/api/ranking")).json();
   for (const body of ['{"ip":"invalid"}', '{"country":"Philippines"}', "{"]) {

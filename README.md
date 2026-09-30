@@ -58,8 +58,10 @@ chooses **Use my location**. That action requests browser location permission an
 sends current coordinates directly to BigDataCloud's free client-side reverse
 geocoding endpoint. It needs HTTPS (localhost is supported) and no API key.
 Coordinates are not sent to this app's server or saved in browser storage.
-Only the local location display changes; rankings and public tap activity still
-use server-resolved IP location. Denied permission preserves that fallback.
+The derived device city and country are sent with your next tap so that tap can
+use the more accurate location. Raw coordinates stay with BigDataCloud; this
+feature is not identity or fraud verification. Denied permission preserves the
+public-IP fallback.
 Requests are user-triggered, limited to one attempt per 30 seconds, and never
 automatically retried. A missing city falls back to the provider's locality.
 Provider terms: https://www.bigdatacloud.com/docs/article/fair-use-policy-for-free-client-side-reverse-geocoding-api

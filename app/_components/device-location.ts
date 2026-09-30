@@ -13,8 +13,10 @@ const regions = new Intl.DisplayNames(["en"], { type: "region" });
 const TIMEOUT = 8000;
 const COOLDOWN = 30_000;
 
+export type DeviceLocation = { city: string; country: string };
+
 /** Resolve only the device's current coordinates, directly from its browser. */
-export async function resolveDeviceLocation(geolocation: Geolocation, request: typeof fetch = fetch) {
+export async function resolveDeviceLocation(geolocation: Geolocation, request: typeof fetch = fetch): Promise<DeviceLocation> {
   const position = await new Promise<GeolocationPosition>((resolve, reject) => {
     geolocation.getCurrentPosition(resolve, () => reject(new Error("Location permission denied or unavailable. You can keep using approximate location.")), {
       enableHighAccuracy: false, maximumAge: 0, timeout: TIMEOUT,

@@ -309,3 +309,10 @@
 - [x] Align Privacy Policy with modal-only device location and development behavior
 - [x] Clarify in Terms that device location does not affect rankings
 - [x] Remove stale README wording about a location button
+## 2026-09-30 — Use approved device location for taps
+
+- [x] Pass the resolved device city/country from consent into the counter
+- [x] Send derived device location with the next tap; keep raw coordinates client-side
+- [x] Validate device location on the tap route and use it for attribution
+- [x] Update Terms, Privacy, and README disclosures
+- [x] Add regression coverage for device-attributed taps

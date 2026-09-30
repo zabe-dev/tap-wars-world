@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { countryCode, locationLabel } from "./countries";
-import { getDeviceLocation } from "./device-location";
+import { DeviceLocation, getDeviceLocation } from "./device-location";
 import { LocationConsent } from "./location-consent";
 import { locationConsentDay, millisecondsUntilUtcMidnight } from "./location-consent-date";
 import { getVisitorLocation } from "./visitor-location";
@@ -10,7 +10,7 @@ import { getVisitorLocation } from "./visitor-location";
 const CONSENT_KEY = "tapwars:location-prompt-seen";
 const IS_DEVELOPMENT = process.env.NODE_ENV === "development";
 
-export function LocationStatus() {
+export function LocationStatus({ onResolved }: { onResolved: (location: DeviceLocation) => void }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState("");
@@ -69,6 +69,7 @@ export function LocationStatus() {
     setResult("");
     try {
       const place = await getDeviceLocation(navigator.geolocation);
+      onResolved(place);
       setResult(`Device location: ${place.city}, ${place.country}`);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Location is unavailable. Please try again later.");
