@@ -9,10 +9,12 @@ import { getVisitorLocation } from "./visitor-location";
 import { LoadingDots } from "./loading-dots";
 import { CountryMission } from "./country-mission";
 import Link from "next/link";
+import { MilestoneConfetti } from "./milestone-confetti";
 
 type Place = [city: string, country: string];
 type Toast = { id: number; place: Place; mine: boolean; dx: number; dy: number };
 type RankingEntry = { country: string; count: number };
+type Milestone = { tapTotal: number; topTen: RankingEntry[] };
 type AddedTaps = { country: string; amount: number } | null;
 type Settlement = { country: string; total: number; consumed: number } | null;
 type TapEvent = { id: number; country: string } | null;
@@ -38,6 +40,7 @@ export function Counter() {
 	const [addedTaps, setAddedTaps] = useState<AddedTaps>(null);
 	const [settlement, setSettlement] = useState<Settlement>(null);
 	const [settlementOrder, setSettlementOrder] = useState<string[] | null>(null);
+	const [milestone, setMilestone] = useState<Milestone | null>(null);
 	const pendingRankingRef = useRef<RankingEntry[] | null>(null);
 	const pendingTotalRef = useRef(0);
 	const [rankingLoading, setRankingLoading] = useState(true);
@@ -81,7 +84,7 @@ export function Counter() {
 				body: JSON.stringify(location.ip ? { ip: location.ip } : {}),
 			});
 			if (!response.ok) throw new Error("Tap failed");
-			const data: { city: string; country: string; ranking: RankingEntry[]; accepted: boolean; retryAfter: number } =
+			const data: { city: string; country: string; ranking: RankingEntry[]; accepted: boolean; retryAfter: number; milestone: Milestone | null } =
 				await response.json();
 			if (!data.accepted) {
 				setTapError(`Too many taps in a short period. Try again in ${data.retryAfter}s.`);
@@ -89,6 +92,7 @@ export function Counter() {
 			}
 			const nextCounts = toCounts(data.ranking);
 			const country = countryCode(data.country);
+			if (data.milestone) setMilestone(data.milestone);
 			if (battleActive) {
 				setPendingRanking(data.ranking);
 				pendingRankingRef.current = data.ranking;
@@ -202,6 +206,7 @@ export function Counter() {
 				<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={battleActive ? null : highlightCountry} addedTaps={addedTaps} settlement={settlement} order={settlementOrder} />
 				<footer className={styles.footer}><span>© 2026 tapwars.world</span><nav><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></nav></footer>
 			</div>
+			{milestone && <MilestoneConfetti key={milestone.tapTotal} onComplete={() => setMilestone(null)} />}
 		</main>
 	);
 }

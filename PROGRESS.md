@@ -1,3 +1,9 @@
+## 2026-09-30 — Tap milestones
+
+- [x] Save top-10 snapshots at recurring tap milestones
+- [x] Return each newly recorded milestone once from the tap API
+- [x] Celebrate milestones with client confetti; use smaller intervals in development
+
 ## 2026-09-30 — Tap endpoint hardening
 
 - [x] Reject cross-origin browser tap requests and oversized payloads
