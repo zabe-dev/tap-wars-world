@@ -43,8 +43,8 @@ export function Ranking({ ranking, loading, highlightedCountry, addedTaps, settl
             <span className={styles.flag} aria-hidden="true">{flag(country)}</span>
             <span className={styles.name}>{countryName(country)}</span>
             <span key={settlement?.country === country ? settlement.consumed : "stable"} className={`${styles.score} ${highlightedCountry === country || (settlement?.country === country && consumed > 0) ? styles.scoreFlash : ""}`} title={`${displayCount.toLocaleString("en-US")} taps`}>
-              {displayCount.toLocaleString("en-US")}
               {remaining > 0 && <em className={styles.added}>+{remaining.toLocaleString("en-US")}</em>}
+              {displayCount.toLocaleString("en-US")}
             </span>
           </motion.div>;
           })()}
