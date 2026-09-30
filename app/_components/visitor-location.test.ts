@@ -24,7 +24,7 @@ test("localhost discovers the browser IP and resolves it on our server only once
   }) as typeof fetch;
   const resolve = createLocationResolver(request);
   const [first, second] = await Promise.all([resolve(), resolve()]);
-  expect(first).toEqual({ country: "United States", city: "", ip: "8.8.8.8" });
+  expect(first).toEqual({ country: "United States", city: "Washington, D.C.", ip: "8.8.8.8" });
   expect(second).toEqual(first);
   await resolve();
   expect(calls).toHaveLength(3);
@@ -41,7 +41,7 @@ test("country-only results avoid discovery and preserve attribution", async () =
     calls++;
     return Response.json({ country: "Philippines", city: "" });
   }) as unknown as typeof fetch;
-  expect(await createLocationResolver(request)()).toEqual({ country: "Philippines", city: "" });
+  expect(await createLocationResolver(request)()).toEqual({ country: "Philippines", city: "Manila" });
   expect(calls).toBe(1);
 });
 

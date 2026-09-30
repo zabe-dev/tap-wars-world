@@ -23,6 +23,11 @@ test("locality fills missing city but missing country is rejected", async () => 
   await expect(resolveDeviceLocation(geolocation, invalid)).rejects.toThrow("invalid location");
 });
 
+test("country capital fills a missing device city", async () => {
+  const request = (async () => Response.json({ countryCode: "PH" })) as unknown as typeof fetch;
+  expect(await resolveDeviceLocation(geolocation, request)).toEqual({ city: "Manila", country: "Philippines" });
+});
+
 test("permission denial never contacts the provider", async () => {
   let calls = 0;
   const denied = { getCurrentPosition(_: PositionCallback, reject: PositionErrorCallback) { reject({ code: 1 } as GeolocationPositionError); } } as Geolocation;

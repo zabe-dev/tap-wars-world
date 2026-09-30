@@ -325,3 +325,8 @@
 - [x] Remove development-only modal behavior and UTC-day consent state
 - [x] Simplify location copy, style the checkbox, and title-case legal headings
 - [x] Add standard privacy, disclaimer, liability, and indemnity language
+
+## 2026-09-30 — Capital fallback for missing city data
+
+- [x] Use country capitals when IP or device geolocation has no city
+- [x] Cover capital fallback in server, browser, and activity displays

@@ -1,9 +1,20 @@
 import { z } from "zod";
+import { countryCapital } from "../../country-capitals";
+import { countryCode } from "./countries";
 
 const locationSchema = z.object({ country: z.string().trim().min(1).max(200), city: z.string().trim().max(200) });
 const ipSchema = z.object({ ip: z.union([z.ipv4(), z.ipv6()]) });
 type VisitorLocation = z.infer<typeof locationSchema> & { ip?: string };
 const UNKNOWN: VisitorLocation = { country: "Worldwide", city: "Location unknown" };
+
+function hasUsableCity(city: string) {
+  return !["", "unknown", "location unknown", "n/a", "na", "-"].includes(city.trim().toLowerCase());
+}
+
+function normalizeLocation(location: VisitorLocation): VisitorLocation {
+  const fallback = countryCapital(countryCode(location.country));
+  return { ...location, city: hasUsableCity(location.city) ? location.city : fallback ?? "" };
+}
 
 const LOCATION_TTL = 5 * 60_000;
 const FAILURE_TTL = 30_000;
@@ -33,7 +44,7 @@ async function requestLocation(request: typeof fetch, ip?: string): Promise<Visi
       ...(ip ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ip }) } : {}),
     });
     if (!response.ok) return UNKNOWN;
-    return { ...locationSchema.parse(await response.json()), ...(ip ? { ip } : {}) };
+    return normalizeLocation({ ...locationSchema.parse(await response.json()), ...(ip ? { ip } : {}) });
   } catch {
     // Keep taps and public-IP fallback available after a failed server lookup.
     return UNKNOWN;

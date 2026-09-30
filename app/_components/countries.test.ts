@@ -4,7 +4,7 @@ import { countryCode, countryName, flag, formatCount, getTopCountries, locationL
 test("location labels show full countries without placeholder cities", () => {
   expect(locationLabel("Manila", "PH")).toBe("Manila, Philippines");
   for (const city of ["", "-", " N/A ", "Location unknown"]) {
-    expect(locationLabel(city, "PH")).toBe("Philippines");
+    expect(locationLabel(city, "PH")).toBe("Manila, Philippines");
   }
   expect(locationLabel("", "WW")).toBe("Location unknown");
 });

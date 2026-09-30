@@ -28,7 +28,7 @@ export function SiteControls() {
 	useEffect(() => {
 		let saved: string | null = null;
 		try { saved = localStorage.getItem("wc-theme"); } catch { /* System theme works without storage. */ }
-		const isDark = saved === "dark" || (saved !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+		const isDark = saved === "dark";
 		setDark(isDark);
 		document.documentElement.dataset.theme = isDark ? "dark" : "light";
 	}, []);

@@ -1,3 +1,5 @@
+import { countryCapital } from "../../country-capitals";
+
 const regions = new Intl.DisplayNames(["en"], { type: "region" });
 const LEADERBOARD_SIZE = 10;
 const compactNumber = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 2 });
@@ -35,7 +37,10 @@ export function locationLabel(city: string, country: string) {
   const cleanCity = city.trim();
   const missing = ["", "unknown", "location unknown", "another location", "n/a", "na", "-"];
   const name = countryName(country);
-  return missing.includes(cleanCity.toLowerCase()) || cleanCity === name ? name : `${cleanCity}, ${name}`;
+  const displayCity = missing.includes(cleanCity.toLowerCase()) || cleanCity === name
+    ? countryCapital(country) ?? ""
+    : cleanCity;
+  return displayCity ? `${displayCity}, ${name}` : name;
 }
 
 export function flag(country: string) {

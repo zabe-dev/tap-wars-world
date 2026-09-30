@@ -34,7 +34,7 @@ test("missing proxy city never lets a browser change the trusted country", async
     const response = await app.request("/api/location", {
       method: "POST", headers: { "x-forwarded-for": "8.8.8.8" }, body: JSON.stringify({ ip: "1.1.1.1" }),
     });
-    expect(await response.json()).toEqual({ country: "United States", city: "" });
+    expect(await response.json()).toEqual({ country: "United States", city: "Washington, D.C." });
     expect(lookup).toHaveBeenCalledTimes(1);
   } finally {
     lookup.mockRestore();

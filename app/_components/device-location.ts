@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { countryCapital } from "../../country-capitals";
 
 const placeSchema = z.object({
   countryCode: z.string().regex(/^[A-Z]{2}$/),
@@ -14,6 +15,10 @@ const TIMEOUT = 8000;
 const COOLDOWN = 30_000;
 
 export type DeviceLocation = { city: string; country: string };
+
+function hasUsableCity(city?: string) {
+  return Boolean(city && !["unknown", "location unknown", "n/a", "na", "-"].includes(city.trim().toLowerCase()));
+}
 
 /** Resolve only the device's current coordinates, directly from its browser. */
 export async function resolveDeviceLocation(geolocation: Geolocation, request: typeof fetch = fetch): Promise<DeviceLocation> {
@@ -34,7 +39,7 @@ export async function resolveDeviceLocation(geolocation: Geolocation, request: t
   if (!parsed.success) throw new Error("City lookup returned an invalid location. Please try again later.");
   const place = parsed.data;
   const country = regions.of(place.countryCode);
-  const city = place.city || place.locality;
+  const city = [place.city, place.locality].find(hasUsableCity) || countryCapital(place.countryCode);
   if (!country || country === place.countryCode || !city) throw new Error("No city was found for this location.");
   return { city, country };
 }

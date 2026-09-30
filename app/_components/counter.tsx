@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { countryCapital } from "../../country-capitals";
 import styles from "./counter.module.css";
 import { countryCode, flag, toCounts } from "./countries";
 import { useSound } from "./site-controls";
@@ -77,7 +78,7 @@ export function Counter() {
 				if (activity.battle !== undefined) setSharedBattle(activity.battle);
 				if (!activity.country || activity.clientId === clientId.current) return;
 				const code = countryCode(activity.country);
-				showToast([activity.city?.trim() || "Another location", code], false);
+				showToast([activity.city?.trim() || countryCapital(code) || "Another location", code], false);
 				setHighlightCountry(code);
 				window.setTimeout(() => setHighlightCountry((current) => current === code ? null : current), 700);
 				setCounts((current) => ({ ...current, [code]: (current[code] ?? 0) + 1 }));

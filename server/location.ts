@@ -1,6 +1,7 @@
 import { isIP } from "node:net";
 import geoip from "geoip-lite";
 import { z } from "zod";
+import { countryCapital } from "../country-capitals";
 
 const hopsSchema = z.coerce.number().int().min(0).max(10).default(0);
 const locationSchema = z.object({
@@ -28,8 +29,10 @@ function normalizeDeviceLocation(location?: { country: string; city: string }) {
   const country = location.country.trim();
   const code = /^[A-Z]{2}$/.test(country) ? country : countryCodes.get(country.toLowerCase());
   const city = location.city.trim();
-  if (!code || !regions.of(code) || !hasUsableCity(city)) return null;
-  return { country: regions.of(code) ?? country, city };
+  if (!code || !regions.of(code)) return null;
+  const resolvedCity = hasUsableCity(city) ? city : countryCapital(code);
+  if (!resolvedCity) return null;
+  return { country: regions.of(code) ?? country, city: resolvedCity };
 }
 
 /** Select the visitor from the right of a trusted proxy chain; zero disables headers. */
@@ -61,7 +64,7 @@ export function lookupLocation(ip: string | null) {
     if (!parsed.success || regions.of(parsed.data.country) === parsed.data.country) return UNKNOWN;
     return {
       country: regions.of(parsed.data.country) ?? parsed.data.country,
-      city: hasUsableCity(parsed.data.city) ? parsed.data.city : "",
+      city: hasUsableCity(parsed.data.city) ? parsed.data.city : countryCapital(parsed.data.country) ?? "",
     };
   } catch {
     console.error("Local GeoIP lookup failed; counting tap without location.");
