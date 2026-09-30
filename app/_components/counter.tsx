@@ -296,7 +296,7 @@ export function Counter() {
 						aria-label={`Add your tap to tapwars.world. ${Math.max(0, nextMilestone(total) - total).toLocaleString("en-US")} taps remaining to the next milestone.`}
 					>
 						<small className={styles.nextGoal}>{new Intl.NumberFormat("en-US", { notation: "compact" }).format(nextMilestone(total)).toUpperCase()} milestone<br />{Math.max(0, nextMilestone(total) - total).toLocaleString("en-US")} taps remaining</small>
-						<Icon className={styles.tapGuide} icon="lucide:hand-pointer" aria-hidden="true" />
+						<Icon className={styles.tapGuide} icon="lucide:mouse-pointer-click" aria-hidden="true" />
 					</button>
 				</div>
 				<p className={`${styles.error} ${tapError ? styles.errorVisible : ""}`} role="alert" aria-live="polite">
