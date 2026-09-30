@@ -294,7 +294,8 @@ export function Counter() {
 						onKeyUp={() => setButtonPressed(false)}
 						aria-label={`Add your tap to tapwars.world. ${Math.max(0, nextMilestone(total) - total).toLocaleString("en-US")} taps remaining to the next milestone.`}
 					>
-						TAP
+						<span>TAP</span>
+						<small className={styles.nextGoal}>Next goal: {Math.max(0, nextMilestone(total) - total).toLocaleString("en-US")} taps</small>
 					</button>
 				</div>
 				<p className={`${styles.error} ${tapError ? styles.errorVisible : ""}`} role="alert" aria-live="polite">
