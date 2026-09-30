@@ -5,7 +5,13 @@ import { SiteControls, SiteControlsProvider } from "./_components/site-controls"
 
 export const metadata: Metadata = {
 	title: "Tap Wars World",
-	description: "Tap around the world, climb live rankings, and help your country win battles. The perfect button for bored fingers and friendly global competition!",
+	description: "Tap around the world, climb global rankings, and help your country win battles. The perfect button for bored fingers and friendly global competition!",
+	twitter: {
+		card: "summary",
+		title: "Tap Wars World",
+		description: "Tap around the world, climb global rankings, and help your country win battles. The perfect button for bored fingers and friendly global competition!",
+		images: ["/logo-256x256.png"],
+	},
 };
 
 const themeBootstrap = `(() => {
