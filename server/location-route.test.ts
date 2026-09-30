@@ -8,7 +8,7 @@ async function tapRequest(options: RequestInit = {}) {
 	const cookie = session.headers.get("set-cookie")?.split(";", 1)[0] ?? "";
 	return app.request("/api/tap", {
 		...options,
-		headers: { ...(options.headers as Record<string, string> | undefined), cookie, "x-tap-token": tapToken },
+		headers: { ...(options.headers as Record<string, string> | undefined), origin: "http://localhost", cookie, "x-tap-token": tapToken },
 	});
 }
 afterEach(() => {

@@ -27,7 +27,7 @@ app.post("/location", async (context) => {
 
 app.post("/tap", async (context) => {
 	const origin = context.req.header("origin");
-	if (origin && origin !== new URL(context.req.url).origin) {
+	if (!origin || origin !== new URL(context.req.url).origin) {
 		return context.json({ error: { code: "INVALID_ORIGIN", message: "Tap requests must come from this site." } }, 403);
 	}
 	if (!validTapToken(context.req.raw.headers, context.req.header("x-tap-token"))) {
