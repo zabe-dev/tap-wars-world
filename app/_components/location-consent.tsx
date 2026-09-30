@@ -5,12 +5,13 @@ import { Icon } from "@iconify/react";
 import { motion, useReducedMotion } from "motion/react";
 import styles from "./location-consent.module.css";
 
-export function LocationConsent({ open, onAllow, onDismiss, onClose, pending = false, result = "", error = "", approximate = "", rememberChoice = false, onRememberChange }: {
+export function LocationConsent({ open, onAllow, onDismiss, onClose, pending = false, verifying = false, result = "", error = "", approximate = "", rememberChoice = false, onRememberChange }: {
   open: boolean;
   onAllow: () => void;
   onDismiss: () => void;
   onClose?: () => void;
   pending?: boolean;
+  verifying?: boolean;
   result?: string;
   error?: string;
   approximate?: string;
@@ -66,13 +67,13 @@ export function LocationConsent({ open, onAllow, onDismiss, onClose, pending = f
       </>}
       {error && <p className={styles.error} role="alert">{error}</p>}
       <div className={styles.actions}>
-        <button type="button" onClick={onDismiss}>
+        <button type="button" onClick={onDismiss} disabled={pending || verifying}>
           <Icon icon="lucide:x" aria-hidden="true" />
           Not now
         </button>
-        <button type="button" className={styles.allow} onClick={result ? onDismiss : onAllow} disabled={pending}>
+        <button type="button" className={styles.allow} onClick={result ? onDismiss : onAllow} disabled={pending || verifying}>
           <Icon icon={result ? "lucide:check" : "lucide:map-pin"} aria-hidden="true" />
-          {pending ? "Finding…" : result ? "Done" : error ? "Try again" : "Use my location"}
+          {pending ? "Finding…" : verifying ? "Verifying…" : result ? "Done" : error ? "Try again" : "Use my location"}
         </button>
       </div>
     </motion.div>

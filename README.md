@@ -35,6 +35,13 @@ Traefik's `forwardedHeaders.trustedIPs` for the specific upstream proxy ranges.
 Never enable `forwardedHeaders.insecure` in production.
 Do not expose a route that bypasses the trusted proxy.
 
+## Tap verification
+
+Turnstile is verified once before a tap session starts. Every tap then requires
+a short-lived, one-time server nonce, while the tap itself has no count-based
+limit. Configure `TURNSTILE_SECRET_KEY` and the comma-separated
+`TURNSTILE_HOSTNAMES` allowlist in deployment secrets.
+
 When proxy location is unavailable (including localhost), the browser discovers
 its public IP directly through ipify, then sends that IP
 to our server for local country lookup. No GPS permission is requested.

@@ -1,14 +1,43 @@
-import { afterEach, expect, spyOn, test } from "bun:test";
+import { afterAll, afterEach, beforeAll, expect, spyOn, test } from "bun:test";
 import geoip from "geoip-lite";
 import app from "./index";
 
 const originalHops = process.env.TRUSTED_PROXY_HOPS;
+const originalSecret = process.env.TURNSTILE_SECRET_KEY;
+const originalHostnames = process.env.TURNSTILE_HOSTNAMES;
+const originalFetch = globalThis.fetch;
+
+beforeAll(() => {
+	process.env.TURNSTILE_SECRET_KEY = "test-secret";
+	process.env.TURNSTILE_HOSTNAMES = "localhost,tapwars.world";
+	globalThis.fetch = (async () => new Response(JSON.stringify({ success: true, action: "tap", hostname: "localhost" }), { status: 200 })) as unknown as typeof globalThis.fetch;
+});
+
+afterAll(() => {
+	globalThis.fetch = originalFetch;
+	if (originalSecret === undefined) delete process.env.TURNSTILE_SECRET_KEY;
+	else process.env.TURNSTILE_SECRET_KEY = originalSecret;
+	if (originalHostnames === undefined) delete process.env.TURNSTILE_HOSTNAMES;
+	else process.env.TURNSTILE_HOSTNAMES = originalHostnames;
+});
+
 async function tapRequest(options: RequestInit = {}) {
 	const session = await app.request("/api/ranking");
 	const { tapToken } = await session.json() as { tapToken: string };
 	const cookie = session.headers.get("set-cookie")?.split(";", 1)[0] ?? "";
+	await app.request("/api/tap-verification", { method: "POST", headers: { origin: "http://localhost", cookie, "x-tap-token": tapToken }, body: JSON.stringify({ turnstileToken: "test-token" }) });
+	const nonceResponse = await app.request("/api/tap-nonce", { headers: { cookie, "x-tap-token": tapToken } });
+	const { nonce } = await nonceResponse.json() as { nonce: string };
+	let body = options.body;
+	if (typeof body === "string") {
+		try {
+			const parsed = JSON.parse(body);
+			if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) body = JSON.stringify({ ...parsed, tapNonce: nonce });
+		} catch { /* Preserve malformed test bodies. */ }
+	} else if (!body) body = JSON.stringify({ tapNonce: nonce });
 	return app.request("/api/tap", {
 		...options,
+		body,
 		headers: { ...(options.headers as Record<string, string> | undefined), origin: "http://localhost", cookie, "x-tap-token": tapToken },
 	});
 }
@@ -120,9 +149,13 @@ test("tap accepts the public host behind a TLS-terminating proxy", async () => {
 	const session = await app.request("/api/ranking", { headers: { host: "tapwars.world" } });
 	const { tapToken } = await session.json() as { tapToken: string };
 	const cookie = session.headers.get("set-cookie")?.split(";", 1)[0] ?? "";
+	await app.request("/api/tap-verification", { method: "POST", headers: { origin: "https://tapwars.world", host: "10.0.1.20:3000", "x-forwarded-host": "tapwars.world", cookie, "x-tap-token": tapToken }, body: JSON.stringify({ turnstileToken: "test-token" }) });
+	const nonceResponse = await app.request("/api/tap-nonce", { headers: { cookie, "x-tap-token": tapToken } });
+	const { nonce } = await nonceResponse.json() as { nonce: string };
 	const response = await app.request("http://10.0.1.20:3000/api/tap", {
 		method: "POST",
 		headers: { origin: "https://tapwars.world", host: "10.0.1.20:3000", "x-forwarded-host": "tapwars.world", cookie, "x-tap-token": tapToken },
+		body: JSON.stringify({ tapNonce: nonce }),
 	});
 	expect(response.status).toBe(200);
 });

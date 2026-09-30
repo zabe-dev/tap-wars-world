@@ -12,9 +12,10 @@ import { getVisitorLocation } from "./visitor-location";
 
 const REMEMBER_KEY = "tapwars:location-consent-remembered";
 
-export function LocationStatus({ onResolved, onConsentDecision, consentRequest = 0 }: {
+export function LocationStatus({ onResolved, onConsentDecision, onVerifyDecision, consentRequest = 0 }: {
   onResolved: (location: DeviceLocation) => void;
   onConsentDecision?: () => void;
+  onVerifyDecision?: () => Promise<void>;
   consentRequest?: number;
 }) {
   const [pending, setPending] = useState(false);
@@ -23,6 +24,7 @@ export function LocationStatus({ onResolved, onConsentDecision, consentRequest =
   const [approximate, setApproximate] = useState("");
   const [consentOpen, setConsentOpen] = useState(false);
   const [rememberChoice, setRememberChoice] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const busy = useRef(false);
 
   useEffect(() => {
@@ -55,10 +57,24 @@ export function LocationStatus({ onResolved, onConsentDecision, consentRequest =
     }
   }
 
-  function dismissConsent() {
+  async function confirmDecision() {
+    setVerifying(true);
+    try {
+      await onVerifyDecision?.();
+      onConsentDecision?.();
+      saveRememberChoice(rememberChoice);
+      return true;
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Verification failed. Please try again.");
+      return false;
+    } finally {
+      setVerifying(false);
+    }
+  }
+
+  async function dismissConsent() {
+    if (!await confirmDecision()) return;
     setConsentOpen(false);
-    onConsentDecision?.();
-    saveRememberChoice(rememberChoice);
   }
 
   function closeConsent() {
@@ -97,6 +113,11 @@ export function LocationStatus({ onResolved, onConsentDecision, consentRequest =
     onRememberChange={setRememberChoice}
     onDismiss={dismissConsent}
     onClose={closeConsent}
-    onAllow={() => { onConsentDecision?.(); saveRememberChoice(rememberChoice); void locate(); }}
+    verifying={verifying}
+    onAllow={async () => {
+      if (!await confirmDecision()) return;
+      setConsentOpen(false);
+      void locate();
+    }}
   />;
 }

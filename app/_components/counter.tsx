@@ -13,6 +13,7 @@ import { MilestoneConfetti } from "./milestone-confetti";
 import { MILESTONE_TARGETS } from "./milestone-targets";
 import { LocationStatus } from "./location-status";
 import type { DeviceLocation } from "./device-location";
+import { TurnstileWidget, type TurnstileHandle } from "./turnstile-widget";
 
 type Place = [city: string, country: string];
 type Toast = { id: number; place: Place; mine: boolean; dx: number; dy: number };
@@ -41,6 +42,8 @@ export function Counter() {
 	const [consentDecided, setConsentDecided] = useState(false);
 	const [consentRequest, setConsentRequest] = useState(0);
 	const [tapToken, setTapToken] = useState<string | null>(null);
+	const turnstile = useRef<TurnstileHandle>(null);
+	const verifiedSession = useRef(false);
 	const [sharedBattle, setSharedBattle] = useState<SharedBattle>(null);
 	const [milestone, setMilestone] = useState<Milestone | null>(null);
 	const [rankingLoading, setRankingLoading] = useState(true);
@@ -110,6 +113,21 @@ export function Counter() {
 		setTimeout(() => setToasts((value) => value.filter((toast) => toast.id !== id)), 2300);
 	}
 
+	const verifyTapSession = useCallback(async () => {
+		if (verifiedSession.current) return;
+		if (!tapToken) throw new Error("Tap session is still loading. Please try again.");
+		const token = await turnstile.current?.getToken();
+		if (!token) throw new Error("Bot verification is still loading.");
+		const response = await fetch("/api/tap-verification", {
+			method: "POST",
+			headers: { "Content-Type": "application/json", "x-tap-token": tapToken },
+			body: JSON.stringify({ turnstileToken: token }),
+		});
+		turnstile.current?.reset();
+		if (!response.ok) throw new Error("Bot verification failed. Please try again.");
+		verifiedSession.current = true;
+	}, [tapToken]);
+
 	async function tap() {
 		if (!consentDecided) {
 			setConsentRequest((request) => request + 1);
@@ -121,6 +139,7 @@ export function Counter() {
 		setRings((value) => [...value, ringId]);
 		setTimeout(() => setRings((value) => value.filter((id) => id !== ringId)), 800);
 		try {
+			await verifyTapSession();
 			const location = await getVisitorLocation();
 			const displayLocation = deviceLocation ?? location;
 			setVisitorCountry(countryCode(displayLocation.country));
@@ -128,10 +147,15 @@ export function Counter() {
 				setTapError("Tap session is still loading. Please try again.");
 				return;
 			}
+			const nonceResponse = await fetch("/api/tap-nonce", { headers: { "x-tap-token": tapToken }, cache: "no-store" });
+			if (!nonceResponse.ok) throw new Error("Tap session is invalid");
+			const { nonce } = await nonceResponse.json() as { nonce?: string };
+			if (!nonce) throw new Error("Tap request could not be prepared");
 			const response = await fetch("/api/tap", {
 				method: "POST",
 				headers: { "Content-Type": "application/json", "x-tap-token": tapToken, "x-client-id": clientId.current },
 				body: JSON.stringify({
+					tapNonce: nonce,
 					...(location.ip ? { ip: location.ip } : {}),
 					...(deviceLocation ? { deviceLocation } : {}),
 				}),
@@ -139,10 +163,6 @@ export function Counter() {
 			if (!response.ok) throw new Error("Tap failed");
 			const data: { city: string; country: string; ranking: RankingEntry[]; accepted: boolean; retryAfter: number; milestone: Milestone | null; battle: SharedBattle } =
 				await response.json();
-			if (!data.accepted) {
-				setTapError(`Too many taps in a short period. Try again in ${data.retryAfter}s.`);
-				return;
-			}
 			const nextCounts = toCounts(data.ranking);
 			const country = countryCode(data.country);
 			const ownLocation = deviceLocation ?? { city: data.city, country: data.country };
@@ -253,6 +273,7 @@ export function Counter() {
 				setDeviceLocation(place);
 				setVisitorCountry(countryCode(place.country));
 			}} />
+			<TurnstileWidget ref={turnstile} />
 		</main>
 	);
 }
