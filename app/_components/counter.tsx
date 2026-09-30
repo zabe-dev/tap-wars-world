@@ -109,9 +109,13 @@ export function Counter() {
 
 	function showToast(place: Place, mine: boolean) {
 		const id = Date.now() + Math.random();
+		const mobile = window.innerWidth <= 600;
+		const horizontalSpread = mobile ? 170 : 300;
+		const verticalStart = mobile ? 75 : 110;
+		const verticalSpread = mobile ? 75 : 110;
 		setToasts((value) => [
 			...value.slice(-3),
-			{ id, place, mine, dx: (Math.random() - 0.5) * 300, dy: -(110 + Math.random() * 110) },
+			{ id, place, mine, dx: (Math.random() - 0.5) * horizontalSpread, dy: -(verticalStart + Math.random() * verticalSpread) },
 		]);
 		setTimeout(() => setToasts((value) => value.filter((toast) => toast.id !== id)), 2300);
 	}
