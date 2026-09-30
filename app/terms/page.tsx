@@ -7,7 +7,7 @@ export default function TermsPage() {
   return <main className={styles.page}><article className={styles.content}>
     <Link className={styles.back} href="/">← Back to tapwars.world</Link>
     <h1>Terms of Use</h1><p className={styles.updated}>Last updated September 30, 2026</p>
-    <p>By using tapwars.world, you agree to use the service lawfully and in a way that does not interfere with other visitors or the service itself.</p>
+    <p>By accessing or using tapwars.world, you acknowledge that you have read and agree to these Terms of Use. You also agree to use the service lawfully and in a way that does not interfere with other visitors or the service itself.</p>
     <p>In these terms, “the service” means the tapwars.world website, its rankings, battles, APIs, and related features.</p>
     <h2>Fair use</h2>
     <p>You may tap manually for personal use. Do not use scripts, bots, clickers, automated requests, multiple accounts or devices to manipulate rankings, bypass rate limits, overload the service, or interfere with another visitor’s use.</p>

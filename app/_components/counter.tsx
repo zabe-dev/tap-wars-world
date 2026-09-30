@@ -68,9 +68,9 @@ export function Counter() {
 		const events = new EventSource("/api/activity/stream");
 		events.addEventListener("tap", (event) => {
 			try {
-				const activity = JSON.parse((event as MessageEvent<string>).data) as { country?: string; clientId?: string };
-				if (!activity.country || activity.clientId === clientId.current) return;
-				showToast(["Another tap", countryCode(activity.country)], false);
+				const activity = JSON.parse((event as MessageEvent<string>).data) as { city?: string; country?: string; clientId?: string };
+				if (!activity.city || !activity.country || activity.clientId === clientId.current) return;
+				showToast([activity.city, countryCode(activity.country)], false);
 				if (!battleActiveRef.current) {
 					const code = countryCode(activity.country);
 					setCounts((current) => ({ ...current, [code]: (current[code] ?? 0) + 1 }));

@@ -1,6 +1,6 @@
 import { client } from "./db";
 
-export type TapActivity = { country: string; clientId?: string };
+export type TapActivity = { city: string; country: string; clientId?: string };
 type Subscriber = (activity: TapActivity) => void;
 const subscribers = new Set<Subscriber>();
 let listenerStarted = false;
@@ -11,7 +11,7 @@ function ensureListener() {
 	void client.listen("tap_activity", (payload) => {
 		try {
 			const activity = JSON.parse(payload) as TapActivity;
-			if (typeof activity.country !== "string") return;
+			if (typeof activity.city !== "string" || typeof activity.country !== "string") return;
 			subscribers.forEach((subscriber) => subscriber(activity));
 		} catch {
 			/* Ignore malformed notifications. */
