@@ -47,16 +47,14 @@ export function Counter() {
 
 	useEffect(() => {
 		void getVisitorLocation().then((location) => setVisitorCountry(countryCode(location.country)));
-		const previewDelay = new URLSearchParams(window.location.search).get("loading") === "1" ? 2000 : 0;
-		const timer = window.setTimeout(() => fetch("/api/ranking")
+		void fetch("/api/ranking")
 			.then((response) => response.json())
 			.then((data: { ranking: RankingEntry[] }) => {
 				setCounts(toCounts(data.ranking));
 				setTotal(totalFor(data.ranking));
 			})
 			.catch(() => undefined)
-			.finally(() => setRankingLoading(false)), previewDelay);
-		return () => window.clearTimeout(timer);
+			.finally(() => setRankingLoading(false));
 	}, []);
 
 	function showToast(place: Place, mine: boolean) {

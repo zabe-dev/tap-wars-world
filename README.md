@@ -13,8 +13,6 @@ the connection string supplied by that service, keep `PORT=3000`, and set
 proxy. The production start command runs the Drizzle migration before Next.js
 starts, so a new database gets its tables automatically.
 
-Open `/?loading=1` to preview the animated data-loading skeletons for two seconds.
-
 ## Dokploy location detection
 
 The server uses a local GeoIP database to look up the visitor's approximate
