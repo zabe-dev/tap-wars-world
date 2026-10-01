@@ -44,7 +44,6 @@ export function Counter({ scope }: { scope?: string } = {}) {
 	const [visitorCountry, setVisitorCountry] = useState<string | null>(null);
 	const [deviceLocation, setDeviceLocation] = useState<DeviceLocation | null>(null);
 	const tapLocation = useRef<(DeviceLocation & { ip?: string }) | null>(null);
-	const savedApproximateLocation = useRef<(DeviceLocation & { ip?: string }) | null>(null);
 	const [consentDecided, setConsentDecided] = useState(false);
 	const [consentRequest, setConsentRequest] = useState(0);
 	const [tapToken, setTapToken] = useState<string | null>(null);
@@ -66,22 +65,12 @@ export function Counter({ scope }: { scope?: string } = {}) {
 	useEffect(() => {
 		try {
 			const savedDevice = JSON.parse(localStorage.getItem("wc-device-location") ?? "null") as DeviceLocation | null;
-			const savedApproximate = JSON.parse(localStorage.getItem("wc-approximate-location") ?? "null") as (DeviceLocation & { ip?: string }) | null;
 			if (savedDevice?.country && savedDevice.city) {
 				setDeviceLocation(savedDevice);
-				tapLocation.current = savedDevice;
-			} else if (savedApproximate?.country && savedApproximate.city) {
-				savedApproximateLocation.current = savedApproximate;
-				tapLocation.current = savedApproximate;
 			}
 		} catch { /* Ignore malformed saved locations. */ }
 		void getVisitorLocation().then((location) => {
-			try { localStorage.setItem("wc-approximate-location", JSON.stringify(location)); } catch { /* Optional cache. */ }
-			if (!tapLocation.current) {
-				savedApproximateLocation.current = location;
-				tapLocation.current = location;
-			}
-			const code = countryCode(tapLocation.current.country);
+			const code = countryCode((tapLocation.current ?? deviceLocation ?? location).country);
 			setVisitorCountry(code);
 		});
 		void fetch(scope ? `/api/regional/${scope}` : "/api/ranking")
@@ -336,7 +325,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 			{milestone && <MilestoneConfetti key={milestone.tapTotal} onComplete={() => setMilestone(null)} />}
 			<LocationStatus consentRequest={consentRequest} onConsentDecision={markConsentDecided} onResolved={(place) => {
 				setDeviceLocation(place);
-				tapLocation.current = place;
+				if (!tapLocation.current) tapLocation.current = place;
 				try { localStorage.setItem("wc-device-location", JSON.stringify(place)); } catch { /* Optional cache. */ }
 				setVisitorCountry(countryCode(place.country));
 			}} />
