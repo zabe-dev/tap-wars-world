@@ -27,9 +27,10 @@ function hasUsableCity(city: string) {
   return normalized.length > 0 && !["unknown", "n/a", "na", "-"].includes(normalized);
 }
 
-function normalizeRegion(country: string, region?: string) {
+function normalizeRegion(country: string, region?: string, city?: string) {
 	if (!region) return undefined;
 	const value = region.trim();
+	if (country === "PH" && value === "03" && city?.trim().toLowerCase() === "angeles city") return "Pampanga";
 	return country === "PH" ? PH_REGIONS[value] ?? value : country === "US" ? US_REGIONS[value.toUpperCase()] ?? value : value;
 }
 
@@ -41,7 +42,7 @@ function normalizeDeviceLocation(location?: { country: string; city: string; reg
   if (!code || !regions.of(code)) return null;
   const resolvedCity = hasUsableCity(city) ? city : countryCapital(code);
   if (!resolvedCity) return null;
-  return { country: regions.of(code) ?? country, city: resolvedCity, region: normalizeRegion(code, location.region) };
+  return { country: regions.of(code) ?? country, city: resolvedCity, region: normalizeRegion(code, location.region, resolvedCity) };
 }
 
 /** Select the visitor from the right of a trusted proxy chain; zero disables headers. */
@@ -74,7 +75,7 @@ export function lookupLocation(ip: string | null) {
     return {
       country: regions.of(parsed.data.country) ?? parsed.data.country,
       city: hasUsableCity(parsed.data.city) ? parsed.data.city : countryCapital(parsed.data.country) ?? "",
-      region: normalizeRegion(parsed.data.country, parsed.data.region),
+      region: normalizeRegion(parsed.data.country, parsed.data.region, parsed.data.city),
     };
   } catch {
     console.error("Local GeoIP lookup failed; counting tap without location.");
