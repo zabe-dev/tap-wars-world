@@ -43,6 +43,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 	const [highlightCountry, setHighlightCountry] = useState<string | null>(null);
 	const [visitorCountry, setVisitorCountry] = useState<string | null>(null);
 	const [deviceLocation, setDeviceLocation] = useState<DeviceLocation | null>(null);
+	const tapLocation = useRef<(DeviceLocation & { ip?: string }) | null>(null);
 	const [consentDecided, setConsentDecided] = useState(false);
 	const [consentRequest, setConsentRequest] = useState(0);
 	const [tapToken, setTapToken] = useState<string | null>(null);
@@ -177,7 +178,8 @@ export function Counter({ scope }: { scope?: string } = {}) {
 		setTimeout(() => setRings((value) => value.filter((id) => id !== ringId)), 800);
 		try {
 			await verifyTapSession();
-			const location = await getVisitorLocation();
+			const location = deviceLocation ?? tapLocation.current ?? await getVisitorLocation();
+			tapLocation.current ??= location;
 			const displayLocation = deviceLocation ?? location;
 			setVisitorCountry(countryCode(displayLocation.country));
 			if (!tapToken) {
@@ -193,7 +195,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 				headers: { "Content-Type": "application/json", "x-tap-token": tapToken, "x-client-id": clientId.current },
 				body: JSON.stringify({
 					tapNonce: nonce,
-					...(location.ip ? { ip: location.ip } : {}),
+					...(tapLocation.current?.ip ? { ip: tapLocation.current.ip } : {}),
 					...(deviceLocation ? { deviceLocation } : {}),
 					anonymous,
 					...(scope ? { scope } : {}),
@@ -317,6 +319,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 			{milestone && <MilestoneConfetti key={milestone.tapTotal} onComplete={() => setMilestone(null)} />}
 			<LocationStatus consentRequest={consentRequest} onConsentDecision={markConsentDecided} onResolved={(place) => {
 				setDeviceLocation(place);
+				tapLocation.current = place;
 				setVisitorCountry(countryCode(place.country));
 			}} />
 			<TurnstileWidget ref={turnstile} />
