@@ -203,6 +203,10 @@ export function Counter({ scope }: { scope?: string } = {}) {
 			const nextCounts = scope ? Object.fromEntries((data.regionalRanking ?? []).map((entry) => [entry.region, entry.count])) : toCounts(data.ranking);
 			const country = countryCode(data.country);
 			const ownLocation = deviceLocation ?? { city: data.city, country: data.country };
+			if (!data.accepted) {
+				showToast([ownLocation.city, countryCode(ownLocation.country)], true);
+				return;
+			}
 			setVisitorCountry(countryCode(ownLocation.country));
 			setSharedBattle(data.battle);
 			if (data.milestone) {
