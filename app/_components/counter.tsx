@@ -279,7 +279,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 					<div className={styles.count} aria-live="polite" aria-busy={rankingLoading}>
 						{rankingLoading ? <LoadingDots label="Loading total taps" /> : <span title={total.toLocaleString("en-US")}>{total.toLocaleString("en-US")}</span>}
 					</div>
-					<p>taps from around the world</p>
+					<p>{scope ? `taps in ${new Intl.DisplayNames(["en"], { type: "region" }).of(scope) ?? scope}` : "taps from around the world"}</p>
 				</section>
 				<div className={styles.stage}>
 					{rings.map((id) => (
