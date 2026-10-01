@@ -29,6 +29,13 @@
       "when": 1790816328079,
       "tag": "0003_regional_counts",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790826427994,
+      "tag": "0005_scoped_battles",
+      "breakpoints": true
     }
   ]
 }

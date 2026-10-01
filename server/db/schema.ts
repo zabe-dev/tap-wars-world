@@ -1,4 +1,4 @@
-import { bigint, jsonb, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { bigint, jsonb, pgTable, primaryKey, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const countryCounts = pgTable("country_counts", {
 	country: text("country").primaryKey(),
@@ -22,6 +22,7 @@ export const milestones = pgTable("milestones", {
 
 export const activeBattles = pgTable("active_battles", {
 	id: serial("id").primaryKey(),
+	scope: text("scope").notNull().default("WW"),
 	leftCountry: text("left_country").notNull(),
 	rightCountry: text("right_country").notNull(),
 	leftFrozen: bigint("left_frozen", { mode: "number" }).notNull(),
@@ -29,4 +30,4 @@ export const activeBattles = pgTable("active_battles", {
 	leftScore: bigint("left_score", { mode: "number" }).notNull().default(0),
 	rightScore: bigint("right_score", { mode: "number" }).notNull().default(0),
 	updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (table) => ({ scopeIndex: uniqueIndex("active_battles_scope_idx").on(table.scope) }));

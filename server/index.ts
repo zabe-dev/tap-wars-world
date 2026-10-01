@@ -60,7 +60,12 @@ app.get("/tap-nonce", (context) => {
 
 app.get("/milestones", async (context) => context.json({ milestones: await listMilestones() }));
 
-app.get("/battle", async (context) => context.json({ battle: await getActiveBattle(await getStoredRanking()) }));
+app.get("/battle", async (context) => {
+	const scope = context.req.query("scope")?.toUpperCase() || "WW";
+	if (scope === "WW") return context.json({ battle: await getActiveBattle(await getStoredRanking()) });
+	if (!/^[A-Z]{2}$/.test(scope)) return context.json({ error: { code: "INVALID_COUNTRY" } }, 400);
+	return context.json({ battle: await getActiveBattle((await getRegionalRanking(scope)).map((entry) => ({ country: entry.region, count: entry.count })), scope) });
+});
 
 app.get("/activity/stream", (context) => streamSSE(context, async (stream) => {
 		await stream.writeSSE({ event: "ready", data: "{}" });
@@ -142,7 +147,12 @@ app.post("/tap", async (context) => {
 	const regionalRanking = input.data.scope ? await getRegionalRanking(input.data.scope) : undefined;
 	const countryTotal = input.data.scope ? ranking.find((entry) => entry.country === location.country)?.count ?? 0 : undefined;
 	const milestone = await recordMilestone(ranking);
-	const battle = await recordBattleTap(location.country, ranking);
+	const battleScope = input.data.scope ?? "WW";
+	const battleRanking = input.data.scope
+		? (regionalRanking ?? []).map((entry) => ({ country: entry.region, count: entry.count }))
+		: ranking;
+	const battleParticipant = input.data.scope ? location.city : location.country;
+	const battle = await recordBattleTap(battleScope, battleParticipant, battleRanking);
 	await publishActivity({ city: location.city, country: location.country, anonymous: input.data.anonymous, clientId: context.req.header("x-client-id"), battle });
 	return context.json({ ...location, points: 1, retryAfter: 0, accepted: true, ranking, regionalRanking, countryTotal, milestone, battle });
 });

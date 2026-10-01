@@ -21,7 +21,7 @@ type Toast = { id: number; place: Place; mine: boolean; anonymous: boolean; dx: 
 type RankingEntry = { country: string; count: number };
 type RegionalEntry = { region: string; count: number };
 type Milestone = { tapTotal: number; topTen: RankingEntry[] };
-type SharedBattle = { left: string; right: string; scores: Record<string, number>; frozen: Record<string, number>; completed?: boolean } | null;
+type SharedBattle = { scope: string; left: string; right: string; scores: Record<string, number>; frozen: Record<string, number>; completed?: boolean } | null;
 const initialCounts: Record<string, number> = {};
 const requiresTapVerification = process.env.NODE_ENV === "production";
 
@@ -76,7 +76,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 			})
 			.catch(() => undefined)
 			.finally(() => setRankingLoading(false));
-		void fetch("/api/battle", { cache: "no-store" }).then((response) => response.json()).then((data: { battle: SharedBattle }) => setSharedBattle(data.battle)).catch(() => undefined);
+		void fetch(`/api/battle${scope ? `?scope=${scope}` : ""}`, { cache: "no-store" }).then((response) => response.json()).then((data: { battle: SharedBattle }) => setSharedBattle(data.battle)).catch(() => undefined);
 	}, [scope]);
 
 	useEffect(() => {
@@ -91,7 +91,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 			events.addEventListener("tap", (event) => {
 			try {
 				const activity = JSON.parse((event as MessageEvent<string>).data) as { city?: string; country?: string; anonymous?: boolean; clientId?: string; battle?: SharedBattle };
-				if (activity.battle !== undefined) setSharedBattle(activity.battle);
+				if (activity.battle !== undefined && (!scope ? activity.battle?.scope === "WW" : activity.battle?.scope === scope)) setSharedBattle(activity.battle);
 				if (!activity.country || activity.clientId === clientId.current) return;
 				const code = countryCode(activity.country);
 				if (scope && code !== scope) return;
@@ -313,7 +313,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 				<p className={`${styles.error} ${tapError ? styles.errorVisible : ""}`} role="alert" aria-live="polite">
 					{tapError ?? " "}
 				</p>
-				{!rankingLoading && <CountryMission visitorCountry={visitorCountry} sharedBattle={sharedBattle} />}
+				{!rankingLoading && <CountryMission visitorCountry={visitorCountry} scope={scope} sharedBattle={sharedBattle} />}
 					<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={highlightCountry} countryFlag={scope} />
 			</div>
 			{milestone && <MilestoneConfetti key={milestone.tapTotal} onComplete={() => setMilestone(null)} />}
