@@ -87,12 +87,13 @@ export function Counter({ scope }: { scope?: string } = {}) {
 				/* Ignore malformed battle events. */
 			}
 		});
-		events.addEventListener("tap", (event) => {
+			events.addEventListener("tap", (event) => {
 			try {
 				const activity = JSON.parse((event as MessageEvent<string>).data) as { city?: string; country?: string; anonymous?: boolean; clientId?: string; battle?: SharedBattle };
 				if (activity.battle !== undefined) setSharedBattle(activity.battle);
 				if (!activity.country || activity.clientId === clientId.current) return;
 				const code = countryCode(activity.country);
+				if (scope && code !== scope) return;
 				showToast([activity.city?.trim() || countryCapital(code) || "Another location", code], false, activity.anonymous === true);
 				setHighlightCountry(code);
 				window.setTimeout(() => setHighlightCountry((current) => current === code ? null : current), 700);
