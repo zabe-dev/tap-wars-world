@@ -31,7 +31,7 @@ function hasUsableCity(city: string) {
 function normalizeRegion(country: string, region?: string, city?: string) {
 	if (!region) return undefined;
 	const value = region.trim();
-	if (country === "PH" && value === "03" && city?.trim().toLowerCase() === "angeles city") return "Pampanga";
+	if (country === "PH" && value === "03" && /^(angeles|angeles city)$/i.test(city?.trim() ?? "")) return "Pampanga";
 	return country === "PH" ? PH_REGIONS[value] ?? value : country === "US" ? US_REGIONS[value.toUpperCase()] ?? value : value;
 }
 
