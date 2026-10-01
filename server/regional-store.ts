@@ -4,10 +4,10 @@ import { regionalCounts } from "./db/schema";
 
 export type RegionalEntry = { region: string; count: number };
 
-export async function recordRegionalTap(countryCode: string, region: string) {
+export async function recordRegionalTap(countryCode: string, region: string, points = 1) {
 	if (!db) return;
-	await db.insert(regionalCounts).values({ countryCode, region, tapCount: 1 })
-		.onConflictDoUpdate({ target: [regionalCounts.countryCode, regionalCounts.region], set: { tapCount: sql`${regionalCounts.tapCount} + 1`, updatedAt: new Date() } });
+	await db.insert(regionalCounts).values({ countryCode, region, tapCount: points })
+		.onConflictDoUpdate({ target: [regionalCounts.countryCode, regionalCounts.region], set: { tapCount: sql`${regionalCounts.tapCount} + ${points}`, updatedAt: new Date() } });
 }
 
 export async function getRegionalRanking(countryCode: string): Promise<RegionalEntry[]> {

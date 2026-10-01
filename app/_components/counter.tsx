@@ -13,6 +13,7 @@ import { CountryMission } from "./country-mission";
 import { MilestoneConfetti } from "./milestone-confetti";
 import { MILESTONE_TARGETS } from "./milestone-targets";
 import { LocationStatus } from "./location-status";
+import { LOGO_TAP_EVENT } from "./logo-tap";
 import type { DeviceLocation } from "./device-location";
 import { TurnstileWidget, type TurnstileHandle } from "./turnstile-widget";
 
@@ -29,6 +30,12 @@ function totalFor(ranking: RankingEntry[]) {
 	return ranking.reduce((sum, entry) => sum + entry.count, 0);
 }
 
+function mergeCounts(current: Record<string, number>, next: Record<string, number>) {
+	const merged = { ...current };
+	for (const [key, count] of Object.entries(next)) merged[key] = Math.max(merged[key] ?? 0, count);
+	return merged;
+}
+
 function nextMilestone(total: number) {
 	return MILESTONE_TARGETS.find((target) => target > total) ?? MILESTONE_TARGETS[MILESTONE_TARGETS.length - 1];
 }
@@ -42,6 +49,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 	const [tapError, setTapError] = useState<string | null>(null);
 	const [highlightCountry, setHighlightCountry] = useState<string | null>(null);
 	const [visitorCountry, setVisitorCountry] = useState<string | null>(null);
+	const [visitorCity, setVisitorCity] = useState<string | null>(null);
 	const [deviceLocation, setDeviceLocation] = useState<DeviceLocation | null>(null);
 	const tapLocation = useRef<(DeviceLocation & { ip?: string }) | null>(null);
 	const [consentDecided, setConsentDecided] = useState(false);
@@ -66,6 +74,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 		void getVisitorLocation().then((location) => {
 			const code = countryCode((tapLocation.current ?? deviceLocation ?? location).country);
 			setVisitorCountry(code);
+			setVisitorCity(location.city);
 		});
 		void fetch(scope ? `/api/regional/${scope}` : "/api/ranking")
 			.then((response) => response.json())
@@ -80,7 +89,15 @@ export function Counter({ scope }: { scope?: string } = {}) {
 	}, [scope]);
 
 	useEffect(() => {
+		const refreshRanking = () => {
+			void fetch(scope ? `/api/regional/${scope}` : "/api/ranking", { cache: "no-store" }).then((response) => response.json()).then((data: { ranking: (RankingEntry | RegionalEntry)[]; countryTotal?: number }) => {
+				const next = scope ? Object.fromEntries((data.ranking as RegionalEntry[]).map((entry) => [entry.region, entry.count])) : toCounts(data.ranking as RankingEntry[]);
+				setCounts((current) => mergeCounts(current, next));
+				setTotal((current) => Math.max(current, scope ? data.countryTotal ?? 0 : totalFor(data.ranking as RankingEntry[])));
+			}).catch(() => undefined);
+		};
 		const events = new EventSource("/api/activity/stream");
+		events.onerror = refreshRanking;
 		events.addEventListener("battle", (event) => {
 			try {
 				setSharedBattle(JSON.parse((event as MessageEvent<string>).data) as SharedBattle);
@@ -90,22 +107,25 @@ export function Counter({ scope }: { scope?: string } = {}) {
 		});
 			events.addEventListener("tap", (event) => {
 			try {
-				const activity = JSON.parse((event as MessageEvent<string>).data) as { city?: string; country?: string; anonymous?: boolean; clientId?: string; battle?: SharedBattle };
+				const activity = JSON.parse((event as MessageEvent<string>).data) as { city?: string; country?: string; anonymous?: boolean; quiet?: boolean; clientId?: string; battle?: SharedBattle; ranking?: RankingEntry[]; regionalRanking?: RegionalEntry[]; countryTotal?: number };
 				if (activity.battle !== undefined && (!scope ? activity.battle?.scope === "WW" : activity.battle?.scope === scope)) setSharedBattle(activity.battle);
 				if (!activity.country || activity.clientId === clientId.current) return;
 				const code = countryCode(activity.country);
 				if (scope && code !== scope) return;
-				showToast([activity.city?.trim() || countryCapital(code) || "Another location", code], false, activity.anonymous === true);
+				if (!activity.quiet) showToast([activity.city?.trim() || countryCapital(code) || "Another location", code], false, activity.anonymous === true);
 				const city = activity.city?.trim() || countryCapital(code) || "Unknown city";
 				const rankingKey = scope ? city : code;
 				setHighlightCountry(rankingKey);
 				window.setTimeout(() => setHighlightCountry((current) => current === rankingKey ? null : current), 700);
 				setCounts((current) => ({ ...current, [rankingKey]: (current[rankingKey] ?? 0) + 1 }));
 				setTotal((current) => current + 1);
-				void fetch(scope ? `/api/regional/${scope}` : "/api/ranking", { cache: "no-store" }).then((response) => response.json()).then((data: { ranking: (RankingEntry | RegionalEntry)[]; countryTotal?: number }) => {
-					setCounts(scope ? Object.fromEntries((data.ranking as RegionalEntry[]).map((entry) => [entry.region, entry.count])) : toCounts(data.ranking as RankingEntry[]));
-					setTotal(scope ? data.countryTotal ?? 0 : totalFor(data.ranking as RankingEntry[]));
-				}).catch(() => undefined);
+				if (scope && activity.regionalRanking) {
+					setCounts((current) => mergeCounts(current, Object.fromEntries(activity.regionalRanking!.map((entry) => [entry.region, entry.count]))));
+					setTotal((current) => Math.max(current, activity.countryTotal ?? 0));
+				} else if (!scope && activity.ranking) {
+					setCounts((current) => mergeCounts(current, toCounts(activity.ranking!)));
+					setTotal((current) => Math.max(current, totalFor(activity.ranking!)));
+				}
 			} catch {
 				/* Ignore malformed activity events. */
 			}
@@ -165,7 +185,24 @@ export function Counter({ scope }: { scope?: string } = {}) {
 		return () => { cancelled = true; };
 	}, [tapToken, verifyTapSession]);
 
-	async function tap() {
+	const logoTapHandler = useRef<() => Promise<void>>(async () => {});
+	logoTapHandler.current = async () => {
+		if (!consentDecided) {
+			setConsentRequest((request) => request + 1);
+			return;
+		}
+		for (let wait = 0; wait < 20 && (rankingLoading || !tapToken || (requiresTapVerification && !tapSessionReady)); wait++) {
+			await new Promise((resolve) => window.setTimeout(resolve, 250));
+		}
+		await tap(true, true);
+	};
+	useEffect(() => {
+		const handle = () => { void logoTapHandler.current(); };
+		window.addEventListener(LOGO_TAP_EVENT, handle);
+		return () => window.removeEventListener(LOGO_TAP_EVENT, handle);
+	}, []);
+
+	async function tap(quiet = false, logoTap = false) {
 		if (!consentDecided) {
 			setConsentRequest((request) => request + 1);
 			return;
@@ -173,15 +210,18 @@ export function Counter({ scope }: { scope?: string } = {}) {
 		if (rankingLoading || !tapToken || (requiresTapVerification && !tapSessionReady)) return;
 		setTapError(null);
 		if (!muted) beep();
-		const ringId = Date.now() + Math.random();
-		setRings((value) => [...value, ringId]);
-		setTimeout(() => setRings((value) => value.filter((id) => id !== ringId)), 800);
+		if (!quiet) {
+			const ringId = Date.now() + Math.random();
+			setRings((value) => [...value, ringId]);
+			setTimeout(() => setRings((value) => value.filter((id) => id !== ringId)), 800);
+		}
 		try {
 			await verifyTapSession();
 			const location = deviceLocation ?? tapLocation.current ?? await getVisitorLocation();
 			tapLocation.current ??= location;
 			const displayLocation = deviceLocation ?? location;
 			setVisitorCountry(countryCode(displayLocation.country));
+			setVisitorCity(displayLocation.city);
 			if (!tapToken) {
 				setTapError("Tap session is still loading. Please try again.");
 				return;
@@ -198,6 +238,8 @@ export function Counter({ scope }: { scope?: string } = {}) {
 					...(tapLocation.current?.ip ? { ip: tapLocation.current.ip } : {}),
 					...(tapLocation.current ? { deviceLocation: tapLocation.current } : {}),
 					anonymous,
+					quiet,
+					logoBonus: logoTap,
 					...(scope ? { scope } : {}),
 				}),
 			});
@@ -208,10 +250,11 @@ export function Counter({ scope }: { scope?: string } = {}) {
 			const country = countryCode(data.country);
 			const ownLocation = displayLocation;
 			if (!data.accepted) {
-				showToast([ownLocation.city, countryCode(ownLocation.country)], true);
+				if (!quiet || logoTap) showToast([ownLocation.city, countryCode(ownLocation.country)], true);
 				return;
 			}
 			setVisitorCountry(countryCode(ownLocation.country));
+			setVisitorCity(ownLocation.city);
 			setSharedBattle(data.battle);
 			if (data.milestone) {
 				setMilestone(data.milestone);
@@ -222,7 +265,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 			const highlightKey = scope ? ownLocation.city : country;
 			setHighlightCountry(highlightKey);
 			window.setTimeout(() => setHighlightCountry(null), 700);
-			showToast([ownLocation.city, countryCode(ownLocation.country)], true);
+			if (!quiet || logoTap) showToast([ownLocation.city, countryCode(ownLocation.country)], true);
 		} catch {
 			setTapError("Tap could not be saved. Please try again.");
 		}
@@ -297,7 +340,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 					))}
 					<button
 						className={`${styles.button} ${buttonPressed ? styles.buttonPressed : ""}`}
-						onClick={tap}
+						onClick={() => { void tap(); }}
 						disabled={rankingLoading || !tapToken || (requiresTapVerification && !tapSessionReady)}
 						onPointerDown={() => setButtonPressed(true)}
 						onPointerUp={(event) => { setButtonPressed(false); event.currentTarget.blur(); }}
@@ -313,7 +356,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 				<p className={`${styles.error} ${tapError ? styles.errorVisible : ""}`} role="alert" aria-live="polite">
 					{tapError ?? " "}
 				</p>
-				{!rankingLoading && <CountryMission visitorCountry={visitorCountry} scope={scope} sharedBattle={sharedBattle} />}
+				{!rankingLoading && <CountryMission visitorCountry={visitorCountry} visitorCity={visitorCity} scope={scope} sharedBattle={sharedBattle} />}
 					<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={highlightCountry} countryFlag={scope} />
 			</div>
 			{milestone && <MilestoneConfetti key={milestone.tapTotal} onComplete={() => setMilestone(null)} />}
@@ -322,6 +365,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 				setDeviceLocation(place);
 				tapLocation.current = place;
 				setVisitorCountry(countryCode(place.country));
+				setVisitorCity(place.city);
 			}} />
 			<TurnstileWidget ref={turnstile} />
 		</main>

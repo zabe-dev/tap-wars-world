@@ -88,6 +88,8 @@ const locationInput = z.object({ ip: z.union([z.ipv4(), z.ipv6()]).optional() })
 const tapInput = locationInput.extend({
   tapNonce: z.string().regex(/^[a-f0-9]{48}$/),
   anonymous: z.boolean().default(false),
+  quiet: z.boolean().default(false),
+  logoBonus: z.boolean().default(false),
   scope: z.string().regex(/^[A-Z]{2}$/).optional(),
   deviceLocation: z.object({ country: z.string().trim().min(1).max(200), city: z.string().trim().max(200) }).strict().optional(),
 }).strict();
@@ -142,8 +144,9 @@ app.post("/tap", async (context) => {
 	const locationCountry = new Intl.DisplayNames(["en"], { type: "region" });
 	const countryCode = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).flatMap((a) => Array.from({ length: 26 }, (_, j) => a + String.fromCharCode(65 + j))).find((code) => locationCountry.of(code) === location.country);
 	if (input.data.scope && input.data.scope !== countryCode) return context.json({ ...location, accepted: false, points: 0, retryAfter: 0, ranking: [], regionalRanking: [], milestone: null, battle: null });
-	const ranking = await recordStoredTap(location.country, 1);
-	if (countryCode) await recordRegionalTap(countryCode, location.city);
+	const points = input.data.logoBonus ? 10 : 1;
+	const ranking = await recordStoredTap(location.country, points);
+	if (countryCode) await recordRegionalTap(countryCode, location.city, points);
 	const regionalRanking = input.data.scope ? await getRegionalRanking(input.data.scope) : undefined;
 	const countryTotal = input.data.scope ? ranking.find((entry) => entry.country === location.country)?.count ?? 0 : undefined;
 	const milestone = await recordMilestone(ranking);
@@ -152,8 +155,8 @@ app.post("/tap", async (context) => {
 		? (regionalRanking ?? []).map((entry) => ({ country: entry.region, count: entry.count }))
 		: ranking;
 	const battleParticipant = input.data.scope ? location.city : location.country;
-	const battle = await recordBattleTap(battleScope, battleParticipant, battleRanking);
-	await publishActivity({ city: location.city, country: location.country, anonymous: input.data.anonymous, clientId: context.req.header("x-client-id"), battle });
+	const battle = await recordBattleTap(battleScope, battleParticipant, battleRanking, points);
+	await publishActivity({ city: location.city, country: location.country, anonymous: input.data.anonymous, quiet: input.data.quiet, clientId: context.req.header("x-client-id"), battle, ranking, regionalRanking, countryTotal });
 	return context.json({ ...location, points: 1, retryAfter: 0, accepted: true, ranking, regionalRanking, countryTotal, milestone, battle });
 });
 

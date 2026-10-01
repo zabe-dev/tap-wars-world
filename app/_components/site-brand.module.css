@@ -3,5 +3,9 @@
 .link { display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; }
 .brand img { width: 40px; height: 40px; border-radius: 11px; }
 .brand h1 { margin: 0; font-size: 18px; letter-spacing: -.04em; }
+.logoButton { position: relative; display: inline-flex; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; touch-action: manipulation; user-select: none; }
+.logoRing { position: absolute; inset: 0; border: 2px solid var(--hot); border-radius: 50%; pointer-events: none; animation: logo-ring .7s ease-out forwards; }
+.logoButton:focus-visible { outline: 2px solid var(--hot); outline-offset: 4px; border-radius: 50%; }
+@keyframes logo-ring { 0% { opacity: .9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.8); } }
 @media (max-width: 600px) { .topbar { gap: 10px; padding-top: 18px; } }
 .link:focus-visible { outline: 2px solid var(--hot); outline-offset: 4px; border-radius: 13px; }

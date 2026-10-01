@@ -2,7 +2,12 @@ import { client } from "./db";
 
 import type { BattleState } from "./battles";
 
-export type TapActivity = { city: string; country: string; anonymous: boolean; clientId?: string; battle?: BattleState | null };
+type RankingUpdate = { country: string; count: number };
+type RegionalUpdate = { region: string; count: number };
+export type TapActivity = {
+	city: string; country: string; anonymous: boolean; quiet?: boolean; clientId?: string; battle?: BattleState | null;
+	ranking?: RankingUpdate[]; regionalRanking?: RegionalUpdate[]; countryTotal?: number;
+};
 type Subscriber = (activity: TapActivity) => void;
 const subscribers = new Set<Subscriber>();
 let listenerStarted = false;

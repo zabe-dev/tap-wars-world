@@ -4,14 +4,14 @@ export const metadata = { title: "Terms of Use", description: "Read the Tap Wars
 
 export default function TermsPage() {
   return <main className={styles.page}><div className={styles.shell}><article className={styles.content}>
-    <h1>Terms of Use</h1><p className={styles.updated}>Last updated September 30, 2026</p>
+    <h1>Terms of Use</h1><p className={styles.updated}>Last updated October 1, 2026</p>
     <p>By accessing or using tapwars.world, you acknowledge that you have read and agree to these Terms of Use. You also agree to use the service lawfully and in a way that does not interfere with other visitors or the service itself.</p>
     <p>In these terms, “the service” means the tapwars.world website, its rankings, battles, APIs, and related features.</p>
     <h2>Fair Use</h2>
     <p>You may tap manually for personal use. Do not use scripts, bots, clickers, automated requests, multiple accounts or devices to manipulate rankings, bypass rate limits, overload the service, or interfere with another visitor’s use.</p>
     <h2>Rankings and Location</h2>
     <p>Country attribution is approximate and may be affected by VPNs, proxies, mobile networks, or unavailable location data. Optional device-location permission may use the derived device city and country for your taps; it does not provide identity verification. Rankings and battle results are informational, may be corrected or reset, and do not create a promise of rewards or recognition.</p>
-    <p>The optional anonymous-taps setting blurs city names in activity toasts on your device. It changes only what is displayed locally; it does not change tap attribution or the aggregated ranking.</p>
+    <p>The optional anonymous-taps setting is enabled by default and asks the service to blur your city in activity toasts shown to other visitors. It does not change tap attribution or remove your tap from aggregated country and city rankings or battles. In a small ranking, changes may still make a city easier to infer.</p>
     <h2>Third-Party Services</h2>
     <p>The service may rely on third-party providers, including <a href="https://www.bigdatacloud.com/" target="_blank" rel="nofollow noreferrer">BigDataCloud</a> for location lookup, as well as providers for hosting, databases, and advertising. Those providers operate under their own terms and privacy policies. We are not responsible for their independent services, content, availability, or data practices.</p>
     <h2>Availability</h2>

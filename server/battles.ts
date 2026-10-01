@@ -38,13 +38,13 @@ export async function getActiveBattle(ranking: BattleEntry[], scope = "WW"): Pro
 	}
 }
 
-export async function recordBattleTap(scope: string, participant: string, ranking: BattleEntry[]) {
+export async function recordBattleTap(scope: string, participant: string, ranking: BattleEntry[], points = 1) {
 	if (!db) return null;
 	try {
 		const battle = await getActiveBattle(ranking, scope);
 		if (!battle || ![battle.left, battle.right].includes(participant)) return battle;
 		const column = participant === battle.left ? activeBattles.leftScore : activeBattles.rightScore;
-		await db.update(activeBattles).set({ [participant === battle.left ? "leftScore" : "rightScore"]: sql`${column} + 1`, updatedAt: new Date() }).where(eq(activeBattles.scope, scope));
+		await db.update(activeBattles).set({ [participant === battle.left ? "leftScore" : "rightScore"]: sql`${column} + ${points}`, updatedAt: new Date() }).where(eq(activeBattles.scope, scope));
 		const current = await db.select().from(activeBattles).where(eq(activeBattles.scope, scope)).limit(1);
 		if (!current[0]) return null;
 		const next = toState(current[0]);

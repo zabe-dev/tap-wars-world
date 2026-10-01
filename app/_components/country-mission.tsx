@@ -8,7 +8,7 @@ type BattleState = { scope: string; left: string; right: string; scores: Record<
 type SharedBattle = BattleState | null;
 const BATTLE_SWING = 250;
 
-export function CountryMission({ visitorCountry, scope, sharedBattle }: { visitorCountry: string | null; scope?: string; sharedBattle: SharedBattle }) {
+export function CountryMission({ visitorCountry, visitorCity, scope, sharedBattle }: { visitorCountry: string | null; visitorCity: string | null; scope?: string; sharedBattle: SharedBattle }) {
   const [battle, setBattle] = useState<BattleState | null>(null);
 
   useEffect(() => {
@@ -28,7 +28,11 @@ export function CountryMission({ visitorCountry, scope, sharedBattle }: { visito
     if (normalized.completed) { setBattle(null); return; }
 	}, [sharedBattle]);
 
-  if (!battle || battle.completed || !visitorCountry || (battle.scope === "WW" ? ![battle.left, battle.right].includes(visitorCountry) : battle.scope !== visitorCountry)) return null;
+  if (!battle || battle.completed) return null;
+  const participating = battle.scope === "WW"
+    ? Boolean(visitorCountry && [battle.left, battle.right].includes(visitorCountry))
+    : Boolean(scope && visitorCountry === scope && visitorCity && [battle.left, battle.right].some((city) => city.toLowerCase() === visitorCity.toLowerCase()));
+  if (!participating) return null;
   return <Battle cityBattle={battle.scope !== "WW"} left={battle.left} right={battle.right} scores={battle.scores} />;
 }
 
