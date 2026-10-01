@@ -68,10 +68,10 @@ export function Counter({ scope }: { scope?: string } = {}) {
 		});
 		void fetch(scope ? `/api/regional/${scope}` : "/api/ranking")
 			.then((response) => response.json())
-			.then((data: { ranking: (RankingEntry | RegionalEntry)[]; tapToken?: string }) => {
+			.then((data: { ranking: (RankingEntry | RegionalEntry)[]; countryTotal?: number; tapToken?: string }) => {
 				if (data.tapToken) setTapToken(data.tapToken);
 				setCounts(scope ? Object.fromEntries((data.ranking as RegionalEntry[]).map((entry) => [entry.region, entry.count])) : toCounts(data.ranking as RankingEntry[]));
-				setTotal(totalFor(data.ranking as RankingEntry[]));
+				setTotal(scope ? data.countryTotal ?? 0 : totalFor(data.ranking as RankingEntry[]));
 			})
 			.catch(() => undefined)
 			.finally(() => setRankingLoading(false));
@@ -198,7 +198,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 				}),
 			});
 			if (!response.ok) throw new Error("Tap failed");
-			const data: { city: string; country: string; ranking: RankingEntry[]; regionalRanking?: RegionalEntry[]; accepted: boolean; retryAfter: number; milestone: Milestone | null; battle: SharedBattle } =
+			const data: { city: string; country: string; ranking: RankingEntry[]; regionalRanking?: RegionalEntry[]; countryTotal?: number; accepted: boolean; retryAfter: number; milestone: Milestone | null; battle: SharedBattle } =
 				await response.json();
 			const nextCounts = scope ? Object.fromEntries((data.regionalRanking ?? []).map((entry) => [entry.region, entry.count])) : toCounts(data.ranking);
 			const country = countryCode(data.country);
@@ -214,7 +214,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 				celebrate();
 			}
 			setCounts(nextCounts);
-			setTotal(totalFor(data.ranking));
+			setTotal(scope ? data.countryTotal ?? 0 : totalFor(data.ranking));
 			setHighlightCountry(country);
 			window.setTimeout(() => setHighlightCountry(null), 700);
 			showToast([ownLocation.city, countryCode(ownLocation.country)], true);

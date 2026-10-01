@@ -41,7 +41,10 @@ app.get("/regional/:country", async (context) => {
 	const country = context.req.param("country").toUpperCase();
 	if (!/^[A-Z]{2}$/.test(country)) return context.json({ error: { code: "INVALID_COUNTRY" } }, 400);
 	const tapToken = getOrSetTapToken(context.req.raw.headers, (name, value) => context.header(name, value));
-	return context.json({ country, ranking: await getRegionalRanking(country), tapToken });
+	const worldRanking = await getStoredRanking();
+	const countryName = new Intl.DisplayNames(["en"], { type: "region" }).of(country);
+	const countryTotal = worldRanking.find((entry) => entry.country === countryName)?.count ?? 0;
+	return context.json({ country, ranking: await getRegionalRanking(country), countryTotal, tapToken });
 });
 
 app.get("/tap-nonce", (context) => {
@@ -137,10 +140,11 @@ app.post("/tap", async (context) => {
 	const ranking = await recordStoredTap(location.country, 1);
 	if (input.data.scope) await recordRegionalTap(input.data.scope, location.city);
 	const regionalRanking = input.data.scope ? await getRegionalRanking(input.data.scope) : undefined;
+	const countryTotal = input.data.scope ? ranking.find((entry) => entry.country === location.country)?.count ?? 0 : undefined;
 	const milestone = await recordMilestone(ranking);
 	const battle = await recordBattleTap(location.country, ranking);
 	await publishActivity({ city: location.city, country: location.country, anonymous: input.data.anonymous, clientId: context.req.header("x-client-id"), battle });
-	return context.json({ ...location, points: 1, retryAfter: 0, accepted: true, ranking, regionalRanking, milestone, battle });
+	return context.json({ ...location, points: 1, retryAfter: 0, accepted: true, ranking, regionalRanking, countryTotal, milestone, battle });
 });
 
 export default app;
