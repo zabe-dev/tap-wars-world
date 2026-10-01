@@ -9,7 +9,7 @@ import { LoadingDots } from "./loading-dots";
 
 export function Ranking({ ranking, loading, highlightedCountry, countryFlag }: { ranking: [string, number][]; loading: boolean; highlightedCountry?: string | null; countryFlag?: string }) {
   const reduced = useReducedMotion();
-  const MotionLink = motion(Link);
+  const MotionLink = motion.create(Link);
   const [utcNow, setUtcNow] = useState<Date | null>(null);
   const countries = getTopCountries(ranking);
   useEffect(() => {
