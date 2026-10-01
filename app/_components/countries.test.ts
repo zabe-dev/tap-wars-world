@@ -14,6 +14,11 @@ test("countries outside the former short list keep their name and code", () => {
   expect(countryName("SE")).toBe("Sweden");
   expect(flag("SE")).toBe("🇸🇪");
 });
+test("normalizes UK aliases to the United Kingdom flag code", () => {
+  expect(countryCode("UK")).toBe("GB");
+  expect(countryCode("United Kingdom of Great Britain and Northern Ireland")).toBe("GB");
+  expect(flag(countryCode("UK"))).toBe("🇬🇧");
+});
 test("unknown locations have a neutral label and globe", () => {
   expect(countryCode("Worldwide")).toBe("WW");
   expect(countryName("WW")).toBe("Location unknown");

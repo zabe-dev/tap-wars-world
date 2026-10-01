@@ -18,13 +18,17 @@ for (let first = 65; first <= 90; first++) {
   for (let second = 65; second <= 90; second++) {
     const code = String.fromCharCode(first, second);
     const name = regions.of(code);
-    if (name && name !== code) codesByName.set(name, code);
+    if (name && name !== code) codesByName.set(name.toLowerCase(), code);
   }
 }
+codesByName.set("uk", "GB");
+codesByName.set("united kingdom of great britain and northern ireland", "GB");
 
 export function countryCode(country: string) {
-  if (/^[A-Z]{2}$/.test(country)) return country;
-  return codesByName.get(country) ?? "WW";
+  const normalized = country.trim();
+  if (normalized === "UK") return "GB";
+  if (/^[A-Z]{2}$/.test(normalized)) return normalized;
+  return codesByName.get(normalized.toLowerCase()) ?? "WW";
 }
 
 export function countryName(country: string) {
