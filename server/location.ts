@@ -2,7 +2,6 @@ import { isIP } from "node:net";
 import geoip from "geoip-lite";
 import { z } from "zod";
 import { countryCapital } from "../country-capitals";
-import { lookupMaxMind } from "./maxmind";
 
 const hopsSchema = z.coerce.number().int().min(0).max(10).default(0);
 const locationSchema = z.object({
@@ -13,8 +12,6 @@ const locationSchema = z.object({
 const UNKNOWN = { country: "Worldwide", city: "Location unknown" };
 const regions = new Intl.DisplayNames(["en"], { type: "region" });
 const countryCodes = new Map<string, string>();
-const PH_REGIONS: Record<string, string> = { "01": "Ilocos Region", "02": "Cagayan Valley", "03": "Central Luzon", "04": "Calabarzon", "05": "Bicol Region", "06": "Western Visayas", "07": "Central Visayas", "08": "Eastern Visayas", "09": "Zamboanga Peninsula", "10": "Northern Mindanao", "11": "Davao Region", "12": "Soccsksargen", "13": "Caraga", "14": "Cordillera Administrative Region", "15": "Bangsamoro" };
-const US_REGIONS: Record<string, string> = { CA: "California", TX: "Texas", FL: "Florida", NY: "New York", PA: "Pennsylvania", IL: "Illinois", OH: "Ohio", GA: "Georgia", NC: "North Carolina", MI: "Michigan" };
 for (let first = 65; first <= 90; first++) {
   for (let second = 65; second <= 90; second++) {
     const code = String.fromCharCode(first, second);
@@ -28,13 +25,6 @@ function hasUsableCity(city: string) {
   return normalized.length > 0 && !["unknown", "n/a", "na", "-"].includes(normalized);
 }
 
-function normalizeRegion(country: string, region?: string, city?: string) {
-	if (!region) return undefined;
-	const value = region.trim();
-	if (country === "PH" && value === "03" && /^(angeles|angeles city)$/i.test(city?.trim() ?? "")) return "Pampanga";
-	return country === "PH" ? PH_REGIONS[value] ?? value : country === "US" ? US_REGIONS[value.toUpperCase()] ?? value : value;
-}
-
 function normalizeDeviceLocation(location?: { country: string; city: string; region?: string }) {
   if (!location) return null;
   const country = location.country.trim();
@@ -43,7 +33,7 @@ function normalizeDeviceLocation(location?: { country: string; city: string; reg
   if (!code || !regions.of(code)) return null;
   const resolvedCity = hasUsableCity(city) ? city : countryCapital(code);
   if (!resolvedCity) return null;
-  return { country: regions.of(code) ?? country, city: resolvedCity, region: normalizeRegion(code, location.region, resolvedCity) };
+  return { country: regions.of(code) ?? country, city: resolvedCity, region: location.region?.trim() || undefined };
 }
 
 /** Select the visitor from the right of a trusted proxy chain; zero disables headers. */
@@ -71,18 +61,12 @@ export function lookupLocation(ip: string | null) {
   if (ip && !isIP(ip)) return UNKNOWN;
   if (!ip) return UNKNOWN;
   try {
-	const maxmind = lookupMaxMind(ip);
-	if (maxmind?.country && regions.of(maxmind.country)) return {
-		country: regions.of(maxmind.country) ?? maxmind.country,
-		city: hasUsableCity(maxmind.city ?? "") ? maxmind.city! : countryCapital(maxmind.country) ?? "",
-		region: normalizeRegion(maxmind.country, maxmind.region, maxmind.city),
-	};
     const parsed = locationSchema.safeParse(geoip.lookup(ip));
     if (!parsed.success || regions.of(parsed.data.country) === parsed.data.country) return UNKNOWN;
     return {
       country: regions.of(parsed.data.country) ?? parsed.data.country,
       city: hasUsableCity(parsed.data.city) ? parsed.data.city : countryCapital(parsed.data.country) ?? "",
-      region: normalizeRegion(parsed.data.country, parsed.data.region, parsed.data.city),
+      region: parsed.data.region?.trim() || undefined,
     };
   } catch {
     console.error("Local GeoIP lookup failed; counting tap without location.");
