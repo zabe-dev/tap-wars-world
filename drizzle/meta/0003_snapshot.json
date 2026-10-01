@@ -1,0 +1,209 @@
+{
+  "id": "380b4c6f-9047-4eb4-af50-16accec2be52",
+  "prevId": "bd4b103e-1108-44b6-bab2-132e4171127d",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.active_battles": {
+      "name": "active_battles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "left_country": {
+          "name": "left_country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "right_country": {
+          "name": "right_country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "left_frozen": {
+          "name": "left_frozen",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "right_frozen": {
+          "name": "right_frozen",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "left_score": {
+          "name": "left_score",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "right_score": {
+          "name": "right_score",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.country_counts": {
+      "name": "country_counts",
+      "schema": "",
+      "columns": {
+        "country": {
+          "name": "country",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tap_count": {
+          "name": "tap_count",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.milestones": {
+      "name": "milestones",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tap_total": {
+          "name": "tap_total",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "top_ten": {
+          "name": "top_ten",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "milestones_tap_total_unique": {
+          "name": "milestones_tap_total_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tap_total"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.regional_counts": {
+      "name": "regional_counts",
+      "schema": "",
+      "columns": {
+        "country_code": {
+          "name": "country_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "region": {
+          "name": "region",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tap_count": {
+          "name": "tap_count",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "regional_counts_country_code_region_pk": {
+          "name": "regional_counts_country_code_region_pk",
+          "columns": [
+            "country_code",
+            "region"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

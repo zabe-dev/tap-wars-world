@@ -7,6 +7,7 @@ const hopsSchema = z.coerce.number().int().min(0).max(10).default(0);
 const locationSchema = z.object({
   country: z.string().regex(/^[A-Z]{2}$/),
   city: z.string().trim().max(200),
+  region: z.string().trim().max(200).optional(),
 });
 const UNKNOWN = { country: "Worldwide", city: "Location unknown" };
 const regions = new Intl.DisplayNames(["en"], { type: "region" });
@@ -24,7 +25,7 @@ function hasUsableCity(city: string) {
   return normalized.length > 0 && !["unknown", "n/a", "na", "-"].includes(normalized);
 }
 
-function normalizeDeviceLocation(location?: { country: string; city: string }) {
+function normalizeDeviceLocation(location?: { country: string; city: string; region?: string }) {
   if (!location) return null;
   const country = location.country.trim();
   const code = /^[A-Z]{2}$/.test(country) ? country : countryCodes.get(country.toLowerCase());
@@ -32,7 +33,7 @@ function normalizeDeviceLocation(location?: { country: string; city: string }) {
   if (!code || !regions.of(code)) return null;
   const resolvedCity = hasUsableCity(city) ? city : countryCapital(code);
   if (!resolvedCity) return null;
-  return { country: regions.of(code) ?? country, city: resolvedCity };
+  return { country: regions.of(code) ?? country, city: resolvedCity, region: location.region?.trim() || undefined };
 }
 
 /** Select the visitor from the right of a trusted proxy chain; zero disables headers. */
@@ -65,6 +66,7 @@ export function lookupLocation(ip: string | null) {
     return {
       country: regions.of(parsed.data.country) ?? parsed.data.country,
       city: hasUsableCity(parsed.data.city) ? parsed.data.city : countryCapital(parsed.data.country) ?? "",
+      region: parsed.data.region?.trim() || undefined,
     };
   } catch {
     console.error("Local GeoIP lookup failed; counting tap without location.");
@@ -73,7 +75,7 @@ export function lookupLocation(ip: string | null) {
 }
 
 /** Use an explicitly approved device result, then fall back to public-IP lookup. */
-export function resolveLocation(headers: Headers, browserIp?: string, deviceLocation?: { country: string; city: string }) {
+export function resolveLocation(headers: Headers, browserIp?: string, deviceLocation?: { country: string; city: string; region?: string }): { country: string; city: string; region?: string } {
   const deviceResult = normalizeDeviceLocation(deviceLocation);
   if (deviceResult) return deviceResult;
   const location = getVisitorLocation(headers);

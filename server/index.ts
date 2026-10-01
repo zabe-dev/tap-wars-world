@@ -8,6 +8,7 @@ import { publishActivity, subscribeActivity } from "./activity";
 import { streamSSE } from "hono/streaming";
 import { getActiveBattle, recordBattleTap } from "./battles";
 import { establishVerifiedTurnstileSession, hasVerifiedTurnstileSession, verifyTurnstileToken } from "./turnstile";
+import { getRegionalRanking, recordRegionalTap } from "./regional-store";
 
 const app = new Hono().basePath("/api");
 const MAX_TAP_BODY_LENGTH = 4096;
@@ -34,6 +35,13 @@ function isSameSiteOrigin(request: Request) {
 app.get("/ranking", async (context) => {
 	const tapToken = getOrSetTapToken(context.req.raw.headers, (name, value) => context.header(name, value));
 	return context.json({ ranking: await getStoredRanking(), tapToken });
+});
+
+app.get("/regional/:country", async (context) => {
+	const country = context.req.param("country").toUpperCase();
+	if (!/^[A-Z]{2}$/.test(country)) return context.json({ error: { code: "INVALID_COUNTRY" } }, 400);
+	const tapToken = getOrSetTapToken(context.req.raw.headers, (name, value) => context.header(name, value));
+	return context.json({ country, ranking: await getRegionalRanking(country), tapToken });
 });
 
 app.get("/tap-nonce", (context) => {
@@ -71,8 +79,9 @@ app.get("/activity/stream", (context) => streamSSE(context, async (stream) => {
 const locationInput = z.object({ ip: z.union([z.ipv4(), z.ipv6()]).optional() }).strict();
 const tapInput = locationInput.extend({
   tapNonce: z.string().regex(/^[a-f0-9]{48}$/),
-  anonymous: z.boolean(),
-  deviceLocation: z.object({ country: z.string().trim().min(1).max(200), city: z.string().trim().max(200) }).strict().optional(),
+  anonymous: z.boolean().default(false),
+  scope: z.string().regex(/^[A-Z]{2}$/).optional(),
+  deviceLocation: z.object({ country: z.string().trim().min(1).max(200), city: z.string().trim().max(200), region: z.string().trim().max(200).optional() }).strict().optional(),
 }).strict();
 
 app.use("/location", async (context, next) => {
@@ -122,11 +131,17 @@ app.post("/tap", async (context) => {
 	if (!hasVerifiedTurnstileSession(context.req.header("x-tap-token")!)) return context.json({ error: { code: "BOT_VERIFICATION_REQUIRED", message: "Bot verification is required." } }, 403);
 	if (!consumeTapNonce(context.req.raw.headers, input.data.tapNonce)) return context.json({ error: { code: "INVALID_TAP_NONCE", message: "Tap request expired or was already used. Try again." } }, 403);
 	const location = resolveLocation(context.req.raw.headers, input.data.ip, input.data.deviceLocation);
+	const locationCountry = new Intl.DisplayNames(["en"], { type: "region" });
+	const countryCode = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).flatMap((a) => Array.from({ length: 26 }, (_, j) => a + String.fromCharCode(65 + j))).find((code) => locationCountry.of(code) === location.country);
+	if (input.data.scope && input.data.scope !== countryCode) return context.json({ error: { code: "OUTSIDE_COUNTRY", message: "This tap is outside the selected country." } }, 422);
+	if (input.data.scope && !location.region) return context.json({ error: { code: "REGION_UNAVAILABLE", message: "A province or state could not be identified." } }, 422);
 	const ranking = await recordStoredTap(location.country, 1);
+	if (input.data.scope && location.region) await recordRegionalTap(input.data.scope, location.region);
+	const regionalRanking = input.data.scope ? await getRegionalRanking(input.data.scope) : undefined;
 	const milestone = await recordMilestone(ranking);
 	const battle = await recordBattleTap(location.country, ranking);
 	await publishActivity({ city: location.city, country: location.country, anonymous: input.data.anonymous, clientId: context.req.header("x-client-id"), battle });
-	return context.json({ ...location, points: 1, retryAfter: 0, accepted: true, ranking, milestone, battle });
+	return context.json({ ...location, points: 1, retryAfter: 0, accepted: true, ranking, regionalRanking, milestone, battle });
 });
 
 export default app;

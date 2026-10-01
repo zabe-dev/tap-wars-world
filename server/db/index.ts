@@ -1,6 +1,6 @@
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
-import { activeBattles, countryCounts, milestones } from "./schema";
+import { activeBattles, countryCounts, milestones, regionalCounts } from "./schema";
 
 const connectionString = process.env.DATABASE_URL;
 export const client = connectionString ? postgres(connectionString, {
@@ -11,4 +11,4 @@ export const client = connectionString ? postgres(connectionString, {
 	keep_alive: 60,
 }) : null;
 
-export const db = client ? drizzle({ client, schema: { activeBattles, countryCounts, milestones } }) : null;
+export const db = client ? drizzle({ client, schema: { activeBattles, countryCounts, milestones, regionalCounts } }) : null;

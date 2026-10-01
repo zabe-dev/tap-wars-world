@@ -1,10 +1,17 @@
-import { bigint, jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { bigint, jsonb, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 export const countryCounts = pgTable("country_counts", {
 	country: text("country").primaryKey(),
 	tapCount: bigint("tap_count", { mode: "number" }).notNull().default(0),
 	updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const regionalCounts = pgTable("regional_counts", {
+	countryCode: text("country_code").notNull(),
+	region: text("region").notNull(),
+	tapCount: bigint("tap_count", { mode: "number" }).notNull().default(0),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => ({ primaryKey: primaryKey({ columns: [table.countryCode, table.region] }) }));
 
 export const milestones = pgTable("milestones", {
 	id: serial("id").primaryKey(),

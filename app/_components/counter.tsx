@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { countryCapital } from "../../country-capitals";
 import styles from "./counter.module.css";
@@ -19,6 +20,7 @@ import { TurnstileWidget, type TurnstileHandle } from "./turnstile-widget";
 type Place = [city: string, country: string];
 type Toast = { id: number; place: Place; mine: boolean; anonymous: boolean; dx: number; dy: number };
 type RankingEntry = { country: string; count: number };
+type RegionalEntry = { region: string; count: number };
 type Milestone = { tapTotal: number; topTen: RankingEntry[] };
 type SharedBattle = { left: string; right: string; scores: Record<string, number>; frozen: Record<string, number>; completed?: boolean } | null;
 const initialCounts: Record<string, number> = {};
@@ -33,7 +35,8 @@ function nextMilestone(total: number) {
 }
 
 
-export function Counter() {
+export function Counter({ scope }: { scope?: string } = {}) {
+	const router = useRouter();
 	const [total, setTotal] = useState(0);
 	const [counts, setCounts] = useState(initialCounts);
 	const [toasts, setToasts] = useState<Toast[]>([]);
@@ -61,18 +64,22 @@ export function Counter() {
 	const sorted = useMemo(() => Object.entries(counts).sort((a, b) => b[1] - a[1]), [counts]);
 
 	useEffect(() => {
-		void getVisitorLocation().then((location) => setVisitorCountry(countryCode(location.country)));
-		void fetch("/api/ranking")
+		void getVisitorLocation().then((location) => {
+			const code = countryCode(location.country);
+			setVisitorCountry(code);
+			if (!scope && (code === "PH" || code === "US")) router.replace(`/${code.toLowerCase()}`);
+		});
+		void fetch(scope ? `/api/regional/${scope}` : "/api/ranking")
 			.then((response) => response.json())
-			.then((data: { ranking: RankingEntry[]; tapToken: string }) => {
-				setTapToken(data.tapToken);
-				setCounts(toCounts(data.ranking));
-				setTotal(totalFor(data.ranking));
+			.then((data: { ranking: (RankingEntry | RegionalEntry)[]; tapToken?: string }) => {
+				if (data.tapToken) setTapToken(data.tapToken);
+				setCounts(scope ? Object.fromEntries((data.ranking as RegionalEntry[]).map((entry) => [entry.region, entry.count])) : toCounts(data.ranking as RankingEntry[]));
+				setTotal(totalFor(data.ranking as RankingEntry[]));
 			})
 			.catch(() => undefined)
 			.finally(() => setRankingLoading(false));
 		void fetch("/api/battle", { cache: "no-store" }).then((response) => response.json()).then((data: { battle: SharedBattle }) => setSharedBattle(data.battle)).catch(() => undefined);
-	}, []);
+	}, [router, scope]);
 
 	useEffect(() => {
 		const events = new EventSource("/api/activity/stream");
@@ -189,12 +196,13 @@ export function Counter() {
 					...(location.ip ? { ip: location.ip } : {}),
 					...(deviceLocation ? { deviceLocation } : {}),
 					anonymous,
+					...(scope ? { scope } : {}),
 				}),
 			});
 			if (!response.ok) throw new Error("Tap failed");
-			const data: { city: string; country: string; ranking: RankingEntry[]; accepted: boolean; retryAfter: number; milestone: Milestone | null; battle: SharedBattle } =
+			const data: { city: string; country: string; ranking: RankingEntry[]; regionalRanking?: RegionalEntry[]; accepted: boolean; retryAfter: number; milestone: Milestone | null; battle: SharedBattle } =
 				await response.json();
-			const nextCounts = toCounts(data.ranking);
+			const nextCounts = scope ? Object.fromEntries((data.regionalRanking ?? []).map((entry) => [entry.region, entry.count])) : toCounts(data.ranking);
 			const country = countryCode(data.country);
 			const ownLocation = deviceLocation ?? { city: data.city, country: data.country };
 			setVisitorCountry(countryCode(ownLocation.country));
