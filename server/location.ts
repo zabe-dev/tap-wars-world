@@ -2,6 +2,7 @@ import { isIP } from "node:net";
 import geoip from "geoip-lite";
 import { z } from "zod";
 import { countryCapital } from "../country-capitals";
+import { lookupMaxMind } from "./maxmind";
 
 const hopsSchema = z.coerce.number().int().min(0).max(10).default(0);
 const locationSchema = z.object({
@@ -70,6 +71,12 @@ export function lookupLocation(ip: string | null) {
   if (ip && !isIP(ip)) return UNKNOWN;
   if (!ip) return UNKNOWN;
   try {
+	const maxmind = lookupMaxMind(ip);
+	if (maxmind?.country && regions.of(maxmind.country)) return {
+		country: regions.of(maxmind.country) ?? maxmind.country,
+		city: hasUsableCity(maxmind.city ?? "") ? maxmind.city! : countryCapital(maxmind.country) ?? "",
+		region: normalizeRegion(maxmind.country, maxmind.region, maxmind.city),
+	};
     const parsed = locationSchema.safeParse(geoip.lookup(ip));
     if (!parsed.success || regions.of(parsed.data.country) === parsed.data.country) return UNKNOWN;
     return {
