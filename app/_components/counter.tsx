@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { countryCapital } from "../../country-capitals";
 import styles from "./counter.module.css";
@@ -36,7 +35,6 @@ function nextMilestone(total: number) {
 
 
 export function Counter({ scope }: { scope?: string } = {}) {
-	const router = useRouter();
 	const [total, setTotal] = useState(0);
 	const [counts, setCounts] = useState(initialCounts);
 	const [toasts, setToasts] = useState<Toast[]>([]);
@@ -67,7 +65,6 @@ export function Counter({ scope }: { scope?: string } = {}) {
 		void getVisitorLocation().then((location) => {
 			const code = countryCode(location.country);
 			setVisitorCountry(code);
-			if (!scope && (code === "PH" || code === "US")) router.replace(`/${code.toLowerCase()}`);
 		});
 		void fetch(scope ? `/api/regional/${scope}` : "/api/ranking")
 			.then((response) => response.json())
@@ -79,7 +76,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 			.catch(() => undefined)
 			.finally(() => setRankingLoading(false));
 		void fetch("/api/battle", { cache: "no-store" }).then((response) => response.json()).then((data: { battle: SharedBattle }) => setSharedBattle(data.battle)).catch(() => undefined);
-	}, [router, scope]);
+	}, [scope]);
 
 	useEffect(() => {
 		const events = new EventSource("/api/activity/stream");
@@ -307,7 +304,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 					{tapError ?? " "}
 				</p>
 				{!rankingLoading && <CountryMission visitorCountry={visitorCountry} sharedBattle={sharedBattle} />}
-				<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={highlightCountry} />
+					<Ranking ranking={sorted} loading={rankingLoading} highlightedCountry={highlightCountry} countryFlag={scope} />
 			</div>
 			{milestone && <MilestoneConfetti key={milestone.tapTotal} onComplete={() => setMilestone(null)} />}
 			<LocationStatus consentRequest={consentRequest} onConsentDecision={markConsentDecided} onResolved={(place) => {

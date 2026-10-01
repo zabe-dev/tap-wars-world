@@ -7,7 +7,7 @@ import { countryName, flag, getTopCountries } from "./countries";
 import styles from "./ranking.module.css";
 import { LoadingDots } from "./loading-dots";
 
-export function Ranking({ ranking, loading, highlightedCountry }: { ranking: [string, number][]; loading: boolean; highlightedCountry?: string | null }) {
+export function Ranking({ ranking, loading, highlightedCountry, countryFlag }: { ranking: [string, number][]; loading: boolean; highlightedCountry?: string | null; countryFlag?: string }) {
   const reduced = useReducedMotion();
   const [utcNow, setUtcNow] = useState<Date | null>(null);
   const countries = getTopCountries(ranking);
@@ -37,7 +37,7 @@ export function Ranking({ ranking, loading, highlightedCountry }: { ranking: [st
             transition={{ layout: { duration: reduced ? 0 : .5, ease: [.2, .8, .2, 1] } }}
           >
             <span className={styles.rank}>{index + 1}</span>
-            <span className={styles.flag} aria-hidden="true">{flag(country)}</span>
+            <span className={styles.flag} aria-hidden="true">{flag(countryFlag ?? country)}</span>
             <Link className={styles.name} href={`/${country.toLowerCase()}`}>{countryName(country)}</Link>
             <span className={`${styles.score} ${highlightedCountry === country ? styles.scoreFlash : ""}`} title={`${count.toLocaleString("en-US")} taps`}>
               {count.toLocaleString("en-US")}
