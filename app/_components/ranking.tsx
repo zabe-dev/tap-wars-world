@@ -24,7 +24,7 @@ export function Ranking({ ranking, loading, highlightedCountry, countryFlag }: {
   return (
     <section className={styles.board} aria-labelledby="ranking-title">
       <header className={styles.header}>
-        <h2 id="ranking-title">World Ranking</h2>
+        <h2 id="ranking-title">{countryFlag ? `Ranking - ${countryName(countryFlag)}` : "World Ranking"}</h2>
         <span aria-label={`Current date and time: ${utcLabel}`}>{utcLabel}</span>
       </header>
       <ol className={`${styles.list} ${loading ? styles.loading : ""}`} aria-busy={loading}>
