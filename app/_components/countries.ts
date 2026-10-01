@@ -28,7 +28,9 @@ export function countryCode(country: string) {
 }
 
 export function countryName(country: string) {
-  return country === "WW" ? "Location unknown" : regions.of(country) ?? country;
+  if (country === "WW") return "Location unknown";
+  if (!/^[A-Z]{2}$/.test(country)) return country;
+  try { return regions.of(country) ?? country; } catch { return country; }
 }
 
 /** Show only usable city data, followed by the full country name. */
@@ -45,6 +47,7 @@ export function locationLabel(city: string, country: string) {
 
 export function flag(country: string) {
   if (country === "WW") return "🌐";
+  if (!/^[A-Z]{2}$/.test(country)) return "📍";
   return String.fromCodePoint(...[...country].map((letter) => 127397 + letter.charCodeAt(0)));
 }
 
