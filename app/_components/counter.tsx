@@ -95,10 +95,10 @@ export function Counter({ scope }: { scope?: string } = {}) {
 				const code = countryCode(activity.country);
 				if (scope && code !== scope) return;
 				showToast([activity.city?.trim() || countryCapital(code) || "Another location", code], false, activity.anonymous === true);
-				setHighlightCountry(code);
-				window.setTimeout(() => setHighlightCountry((current) => current === code ? null : current), 700);
 				const city = activity.city?.trim() || countryCapital(code) || "Unknown city";
 				const rankingKey = scope ? city : code;
+				setHighlightCountry(rankingKey);
+				window.setTimeout(() => setHighlightCountry((current) => current === rankingKey ? null : current), 700);
 				setCounts((current) => ({ ...current, [rankingKey]: (current[rankingKey] ?? 0) + 1 }));
 				setTotal((current) => current + 1);
 				void fetch(scope ? `/api/regional/${scope}` : "/api/ranking", { cache: "no-store" }).then((response) => response.json()).then((data: { ranking: (RankingEntry | RegionalEntry)[]; countryTotal?: number }) => {
@@ -217,7 +217,8 @@ export function Counter({ scope }: { scope?: string } = {}) {
 			}
 			setCounts(nextCounts);
 			setTotal(scope ? data.countryTotal ?? 0 : totalFor(data.ranking));
-			setHighlightCountry(country);
+			const highlightKey = scope ? ownLocation.city : country;
+			setHighlightCountry(highlightKey);
 			window.setTimeout(() => setHighlightCountry(null), 700);
 			showToast([ownLocation.city, countryCode(ownLocation.country)], true);
 		} catch {
