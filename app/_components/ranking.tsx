@@ -9,6 +9,7 @@ import { LoadingDots } from "./loading-dots";
 
 export function Ranking({ ranking, loading, highlightedCountry, countryFlag }: { ranking: [string, number][]; loading: boolean; highlightedCountry?: string | null; countryFlag?: string }) {
   const reduced = useReducedMotion();
+  const MotionLink = motion(Link);
   const [utcNow, setUtcNow] = useState<Date | null>(null);
   const countries = getTopCountries(ranking);
   useEffect(() => {
@@ -31,8 +32,10 @@ export function Ranking({ ranking, loading, highlightedCountry, countryFlag }: {
         {countries.map(([country, count], index) => (
           <li key={country}>
           {(() => {
-            return <motion.div
+            const Entry = countryFlag ? motion.div : MotionLink;
+            return <Entry
             className={styles.entry}
+            {...(!countryFlag ? { href: `/${country.toLowerCase()}` } : {})}
             layout={reduced ? false : "position"}
             transition={{ layout: { duration: reduced ? 0 : .5, ease: [.2, .8, .2, 1] } }}
           >
@@ -42,7 +45,7 @@ export function Ranking({ ranking, loading, highlightedCountry, countryFlag }: {
             <span className={`${styles.score} ${highlightedCountry === country ? styles.scoreFlash : ""}`} title={`${count.toLocaleString("en-US")} taps`}>
               {count.toLocaleString("en-US")}
             </span>
-          </motion.div>;
+          </Entry>;
           })()}
           </li>
         ))}
