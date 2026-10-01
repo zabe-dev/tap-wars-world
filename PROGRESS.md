@@ -358,3 +358,14 @@
 - [x] Ask again only when no saved choice exists or a later visit's IP estimate changes
 - [x] Send the selected city/country on every tap; keep the session location fixed
 - [x] Remove the modal's obsolete weekly remember checkbox
+
+## 2026-10-01 — 404 shell and production asset investigation
+
+- [x] Verified production hostname currently does not resolve from this environment; cache and asset headers unavailable.
+- [x] Moved shared site shell to nested route layout so global 404 renders without header/footer.
+- [x] Production build passes.
+
+## 2026-10-01 — Root 404 for invalid country routes
+
+- [x] Moved the country route outside the site layout so invalid country paths use the root 404.
+- [x] Wrapped valid country pages with `SiteFrame`; production build passes.

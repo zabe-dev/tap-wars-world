@@ -1,4 +1,4 @@
-import { Counter } from "./_components/counter";
+import { Counter } from "../_components/counter";
 
 export default function HomePage() {
   const jsonLd = {

@@ -1,4 +1,4 @@
-import styles from "../legal.module.css";
+import styles from "../../legal.module.css";
 
 export const metadata = { title: "Privacy Policy", description: "Read the Tap Wars World privacy policy.", alternates: { canonical: "/privacy" } };
 

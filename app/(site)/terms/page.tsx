@@ -1,4 +1,4 @@
-import styles from "../legal.module.css";
+import styles from "../../legal.module.css";
 
 export const metadata = { title: "Terms of Use", description: "Read the Tap Wars World terms of use.", alternates: { canonical: "/terms" } };
 

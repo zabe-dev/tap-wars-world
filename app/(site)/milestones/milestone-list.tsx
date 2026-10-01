@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { countryCode, countryName, flag } from "../_components/countries";
+import { countryCode, countryName, flag } from "../../_components/countries";
 import styles from "./milestones.module.css";
 
 type Milestone = { tapTotal: number; reachedAt: string; topTen: { country: string; count: number }[]; achieved?: boolean };

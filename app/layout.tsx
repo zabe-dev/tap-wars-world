@@ -1,9 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { SiteFooter } from "./_components/site-footer";
-import { SiteControls, SiteControlsProvider } from "./_components/site-controls";
-import { SiteBrand } from "./_components/site-brand";
-import headerStyles from "./_components/site-brand.module.css";
 
 export const metadata: Metadata = {
 	metadataBase: new URL("https://tapwars.world"),
@@ -65,7 +61,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
         <meta name="theme-color" content="#ffffff" />
       </head>
-      <body><SiteControlsProvider><div className={headerStyles.topbar}><SiteBrand /><SiteControls /></div>{children}</SiteControlsProvider><SiteFooter /></body>
+      <body>{children}</body>
     </html>
   );
 }

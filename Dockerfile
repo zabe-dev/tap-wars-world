@@ -12,6 +12,7 @@ COPY package.json bun.lock next.config.ts tsconfig.json drizzle.config.ts ./
 COPY app ./app
 COPY server ./server
 COPY drizzle ./drizzle
+COPY public ./public
 
 RUN bun run build
 
