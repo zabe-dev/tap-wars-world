@@ -14,9 +14,14 @@ export function formatCount(count: number) {
   return Math.abs(count) < 1_000 ? count.toLocaleString("en-US") : compactNumber.format(count);
 }
 const codesByName = new Map<string, string>();
+const regionAliases: Record<string, string> = {
+  AN: "CW", BU: "MM", CS: "RS", DD: "DE", DY: "BJ", FX: "FR", HV: "BF",
+  NH: "VU", RH: "ZW", SU: "RU", TP: "TL", UK: "GB", VD: "VN", YD: "YE", YU: "RS", ZR: "CD",
+};
 for (let first = 65; first <= 90; first++) {
   for (let second = 65; second <= 90; second++) {
     const code = String.fromCharCode(first, second);
+    if (regionAliases[code]) continue;
     const name = regions.of(code);
     if (name && name !== code) codesByName.set(name.toLowerCase(), code);
   }
@@ -26,7 +31,7 @@ codesByName.set("united kingdom of great britain and northern ireland", "GB");
 
 export function countryCode(country: string) {
   const normalized = country.trim();
-  if (normalized === "UK") return "GB";
+  if (regionAliases[normalized]) return regionAliases[normalized];
   if (/^[A-Z]{2}$/.test(normalized)) return normalized;
   return codesByName.get(normalized.toLowerCase()) ?? "WW";
 }
@@ -52,7 +57,8 @@ export function locationLabel(city: string, country: string) {
 export function flag(country: string) {
   if (country === "WW") return "🌐";
   if (!/^[A-Z]{2}$/.test(country)) return "📍";
-  return String.fromCodePoint(...[...country].map((letter) => 127397 + letter.charCodeAt(0)));
+  const code = countryCode(country);
+  return String.fromCodePoint(...[...code].map((letter) => 127397 + letter.charCodeAt(0)));
 }
 
 export function toCounts(ranking: { country: string; count: number }[]) {

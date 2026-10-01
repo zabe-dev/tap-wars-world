@@ -19,6 +19,13 @@ test("normalizes UK aliases to the United Kingdom flag code", () => {
   expect(countryCode("United Kingdom of Great Britain and Northern Ireland")).toBe("GB");
   expect(flag(countryCode("UK"))).toBe("🇬🇧");
 });
+test("current country names do not resolve to historical flag codes", () => {
+  for (const code of ["GB", "FR", "RU", "RS", "CD", "BF", "BJ", "TL"]) {
+    expect(countryCode(countryName(code))).toBe(code);
+  }
+  expect(flag("UK")).toBe("🇬🇧");
+  expect(flag("FX")).toBe("🇫🇷");
+});
 test("unknown locations have a neutral label and globe", () => {
   expect(countryCode("Worldwide")).toBe("WW");
   expect(countryName("WW")).toBe("Location unknown");
