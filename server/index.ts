@@ -71,6 +71,7 @@ app.get("/activity/stream", (context) => streamSSE(context, async (stream) => {
 const locationInput = z.object({ ip: z.union([z.ipv4(), z.ipv6()]).optional() }).strict();
 const tapInput = locationInput.extend({
   tapNonce: z.string().regex(/^[a-f0-9]{48}$/),
+  anonymous: z.boolean(),
   deviceLocation: z.object({ country: z.string().trim().min(1).max(200), city: z.string().trim().max(200) }).strict().optional(),
 }).strict();
 
@@ -124,7 +125,7 @@ app.post("/tap", async (context) => {
 	const ranking = await recordStoredTap(location.country, 1);
 	const milestone = await recordMilestone(ranking);
 	const battle = await recordBattleTap(location.country, ranking);
-	await publishActivity({ city: location.city, country: location.country, clientId: context.req.header("x-client-id"), battle });
+	await publishActivity({ city: location.city, country: location.country, anonymous: input.data.anonymous, clientId: context.req.header("x-client-id"), battle });
 	return context.json({ ...location, points: 1, retryAfter: 0, accepted: true, ranking, milestone, battle });
 });
 

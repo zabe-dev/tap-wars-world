@@ -2,7 +2,7 @@ import { client } from "./db";
 
 import type { BattleState } from "./battles";
 
-export type TapActivity = { city: string; country: string; clientId?: string; battle?: BattleState | null };
+export type TapActivity = { city: string; country: string; anonymous: boolean; clientId?: string; battle?: BattleState | null };
 type Subscriber = (activity: TapActivity) => void;
 const subscribers = new Set<Subscriber>();
 let listenerStarted = false;
@@ -13,7 +13,7 @@ function ensureListener() {
 	void client.listen("tap_activity", (payload) => {
 		try {
 			const activity = JSON.parse(payload) as TapActivity;
-			if (typeof activity.city !== "string" || typeof activity.country !== "string") return;
+			if (typeof activity.city !== "string" || typeof activity.country !== "string" || typeof activity.anonymous !== "boolean") return;
 			subscribers.forEach((subscriber) => subscriber(activity));
 		} catch {
 			/* Ignore malformed notifications. */

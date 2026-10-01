@@ -17,7 +17,7 @@ import type { DeviceLocation } from "./device-location";
 import { TurnstileWidget, type TurnstileHandle } from "./turnstile-widget";
 
 type Place = [city: string, country: string];
-type Toast = { id: number; place: Place; mine: boolean; dx: number; dy: number };
+type Toast = { id: number; place: Place; mine: boolean; anonymous: boolean; dx: number; dy: number };
 type RankingEntry = { country: string; count: number };
 type Milestone = { tapTotal: number; topTen: RankingEntry[] };
 type SharedBattle = { left: string; right: string; scores: Record<string, number>; frozen: Record<string, number>; completed?: boolean } | null;
@@ -85,11 +85,11 @@ export function Counter() {
 		});
 		events.addEventListener("tap", (event) => {
 			try {
-				const activity = JSON.parse((event as MessageEvent<string>).data) as { city?: string; country?: string; clientId?: string; battle?: SharedBattle };
+				const activity = JSON.parse((event as MessageEvent<string>).data) as { city?: string; country?: string; anonymous?: boolean; clientId?: string; battle?: SharedBattle };
 				if (activity.battle !== undefined) setSharedBattle(activity.battle);
 				if (!activity.country || activity.clientId === clientId.current) return;
 				const code = countryCode(activity.country);
-				showToast([activity.city?.trim() || countryCapital(code) || "Another location", code], false);
+				showToast([activity.city?.trim() || countryCapital(code) || "Another location", code], false, activity.anonymous === true);
 				setHighlightCountry(code);
 				window.setTimeout(() => setHighlightCountry((current) => current === code ? null : current), 700);
 				setCounts((current) => ({ ...current, [code]: (current[code] ?? 0) + 1 }));
@@ -105,7 +105,7 @@ export function Counter() {
 		return () => events.close();
 	}, []);
 
-	function showToast(place: Place, mine: boolean) {
+	function showToast(place: Place, mine: boolean, isAnonymous = anonymous) {
 		const id = Date.now() + Math.random();
 		const mobile = window.innerWidth <= 600;
 		const horizontalSpread = mobile ? 170 : 300;
@@ -113,7 +113,7 @@ export function Counter() {
 		const verticalSpread = mobile ? 75 : 110;
 		setToasts((value) => [
 			...value.slice(-3),
-			{ id, place, mine, dx: (Math.random() - 0.5) * horizontalSpread, dy: -(verticalStart + Math.random() * verticalSpread) },
+			{ id, place, mine, anonymous: isAnonymous, dx: (Math.random() - 0.5) * horizontalSpread, dy: -(verticalStart + Math.random() * verticalSpread) },
 		]);
 		setTimeout(() => setToasts((value) => value.filter((toast) => toast.id !== id)), 2300);
 	}
@@ -188,6 +188,7 @@ export function Counter() {
 					tapNonce: nonce,
 					...(location.ip ? { ip: location.ip } : {}),
 					...(deviceLocation ? { deviceLocation } : {}),
+					anonymous,
 				}),
 			});
 			if (!response.ok) throw new Error("Tap failed");
@@ -277,7 +278,7 @@ export function Counter() {
 						<span key={id} className={styles.ring} />
 					))}
 					{toasts.map((toast) => (
-						<Toast key={toast.id} toast={toast} anonymous={anonymous} />
+						<Toast key={toast.id} toast={toast} />
 					))}
 					<button
 						className={`${styles.button} ${buttonPressed ? styles.buttonPressed : ""}`}
@@ -310,7 +311,7 @@ export function Counter() {
 	);
 }
 
-function Toast({ toast, anonymous }: { toast: Toast; anonymous: boolean }) {
+function Toast({ toast }: { toast: Toast }) {
 	return (
 		<div
 			className={`${styles.toast} ${toast.mine ? styles.mine : ""}`}
@@ -321,7 +322,7 @@ function Toast({ toast, anonymous }: { toast: Toast; anonymous: boolean }) {
 			<span className={styles.toastFlag}>{flag(toast.place[1])}</span>
 			<span>
 				{toast.mine ? "You · " : ""}
-				<span className={anonymous ? styles.blurredCity : undefined} aria-label={anonymous ? "City hidden" : toast.place[0]}>{toast.place[0]}</span>{" "}
+				<span className={toast.anonymous ? styles.blurredCity : undefined} aria-label={toast.anonymous ? "City hidden" : toast.place[0]}>{toast.place[0]}</span>{" "}
 				<em>{toast.place[1] === "WW" ? "" : toast.place[1]}</em>
 			</span>
 		</div>
