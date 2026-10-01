@@ -33,9 +33,10 @@ export function LocationStatus({ onResolved, onConsentDecision, onVerifyDecision
     });
   }, []);
 
-  useEffect(() => {
-    try {
-      const remembered = hasRememberedLocationConsent(localStorage.getItem(REMEMBER_KEY));
+	useEffect(() => {
+		try {
+			const savedDeviceLocation = localStorage.getItem("wc-device-location");
+			const remembered = Boolean(savedDeviceLocation) || hasRememberedLocationConsent(localStorage.getItem(REMEMBER_KEY));
       if (!remembered) localStorage.removeItem(REMEMBER_KEY);
       setConsentOpen(!remembered);
       if (remembered) onConsentDecision?.();
