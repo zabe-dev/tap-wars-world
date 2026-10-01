@@ -138,7 +138,7 @@ app.post("/tap", async (context) => {
 	const countryCode = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).flatMap((a) => Array.from({ length: 26 }, (_, j) => a + String.fromCharCode(65 + j))).find((code) => locationCountry.of(code) === location.country);
 	if (input.data.scope && input.data.scope !== countryCode) return context.json({ ...location, accepted: false, points: 0, retryAfter: 0, ranking: [], regionalRanking: [], milestone: null, battle: null });
 	const ranking = await recordStoredTap(location.country, 1);
-	if (input.data.scope) await recordRegionalTap(input.data.scope, location.city);
+	if (countryCode) await recordRegionalTap(countryCode, location.city);
 	const regionalRanking = input.data.scope ? await getRegionalRanking(input.data.scope) : undefined;
 	const countryTotal = input.data.scope ? ranking.find((entry) => entry.country === location.country)?.count ?? 0 : undefined;
 	const milestone = await recordMilestone(ranking);
