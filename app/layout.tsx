@@ -21,13 +21,13 @@ export const metadata: Metadata = {
 		locale: "en_US",
 		title: "Tap Wars World | Live Global Tap Counter",
 		description: "Tap the world's button, see live country rankings, and help your country win the global tap battle.",
-		images: [{ url: "/logo-256x256.png", width: 256, height: 256, alt: "Tap Wars World" }],
+		images: [{ url: "/logo-1200x630.png", width: 1200, height: 630, alt: "Tap Wars World" }],
 	},
 	twitter: {
 		card: "summary_large_image",
 		title: "Tap Wars World | Live Global Tap Counter",
 		description: "Tap the world's button, see live country rankings, and help your country win the global tap battle.",
-		images: ["/logo-256x256.png"],
+		images: ["/logo-1200x630.png"],
 	},
 };
 
