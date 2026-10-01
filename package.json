@@ -7,15 +7,13 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "bun run geoip:prepare && next build",
-    "geoip:prepare": "bun scripts/prepare-geolite.ts",
+    "build": "next build",
     "start": "sh -c 'if [ -n \"$DATABASE_URL\" ]; then bun run db:migrate; fi; exec next start'",
     "db:migrate": "drizzle-kit migrate",
     "test": "bun test"
   },
   "dependencies": {
     "@iconify/react": "^6.0.2",
-    "@maxmind/geoip2-node": "^7.1.0",
     "drizzle-orm": "^0.45.3",
     "geoip-lite": "2.0.3",
     "hono": "latest",

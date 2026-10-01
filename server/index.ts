@@ -134,9 +134,8 @@ app.post("/tap", async (context) => {
 	const locationCountry = new Intl.DisplayNames(["en"], { type: "region" });
 	const countryCode = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).flatMap((a) => Array.from({ length: 26 }, (_, j) => a + String.fromCharCode(65 + j))).find((code) => locationCountry.of(code) === location.country);
 	if (input.data.scope && input.data.scope !== countryCode) return context.json({ error: { code: "OUTSIDE_COUNTRY", message: "This tap is outside the selected country." } }, 422);
-	if (input.data.scope && !location.region) return context.json({ error: { code: "REGION_UNAVAILABLE", message: "A province or state could not be identified." } }, 422);
 	const ranking = await recordStoredTap(location.country, 1);
-	if (input.data.scope && location.region) await recordRegionalTap(input.data.scope, location.region);
+	if (input.data.scope) await recordRegionalTap(input.data.scope, location.city);
 	const regionalRanking = input.data.scope ? await getRegionalRanking(input.data.scope) : undefined;
 	const milestone = await recordMilestone(ranking);
 	const battle = await recordBattleTap(location.country, ranking);
