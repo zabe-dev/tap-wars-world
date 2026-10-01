@@ -38,7 +38,7 @@ export function Ranking({ ranking, loading, highlightedCountry, countryFlag }: {
           >
             <span className={styles.rank}>{index + 1}</span>
             <span className={styles.flag} aria-hidden="true">{flag(countryFlag ?? country)}</span>
-            <Link className={styles.name} href={`/${country.toLowerCase()}`}>{countryName(country)}</Link>
+            {countryFlag ? <span className={styles.name}>{countryName(country)}</span> : <Link className={styles.name} href={`/${country.toLowerCase()}`}>{countryName(country)}</Link>}
             <span className={`${styles.score} ${highlightedCountry === country ? styles.scoreFlash : ""}`} title={`${count.toLocaleString("en-US")} taps`}>
               {count.toLocaleString("en-US")}
             </span>
