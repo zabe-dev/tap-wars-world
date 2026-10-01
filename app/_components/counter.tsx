@@ -97,11 +97,13 @@ export function Counter({ scope }: { scope?: string } = {}) {
 				showToast([activity.city?.trim() || countryCapital(code) || "Another location", code], false, activity.anonymous === true);
 				setHighlightCountry(code);
 				window.setTimeout(() => setHighlightCountry((current) => current === code ? null : current), 700);
-				setCounts((current) => ({ ...current, [code]: (current[code] ?? 0) + 1 }));
+				const city = activity.city?.trim() || countryCapital(code) || "Unknown city";
+				const rankingKey = scope ? city : code;
+				setCounts((current) => ({ ...current, [rankingKey]: (current[rankingKey] ?? 0) + 1 }));
 				setTotal((current) => current + 1);
-				void fetch("/api/ranking", { cache: "no-store" }).then((response) => response.json()).then((data: { ranking: RankingEntry[] }) => {
-					setCounts(toCounts(data.ranking));
-					setTotal(totalFor(data.ranking));
+				void fetch(scope ? `/api/regional/${scope}` : "/api/ranking", { cache: "no-store" }).then((response) => response.json()).then((data: { ranking: (RankingEntry | RegionalEntry)[]; countryTotal?: number }) => {
+					setCounts(scope ? Object.fromEntries((data.ranking as RegionalEntry[]).map((entry) => [entry.region, entry.count])) : toCounts(data.ranking as RankingEntry[]));
+					setTotal(scope ? data.countryTotal ?? 0 : totalFor(data.ranking as RankingEntry[]));
 				}).catch(() => undefined);
 			} catch {
 				/* Ignore malformed activity events. */
