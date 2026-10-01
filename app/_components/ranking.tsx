@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { countryName, flag, getTopCountries } from "./countries";
 import styles from "./ranking.module.css";
@@ -37,7 +38,7 @@ export function Ranking({ ranking, loading, highlightedCountry }: { ranking: [st
           >
             <span className={styles.rank}>{index + 1}</span>
             <span className={styles.flag} aria-hidden="true">{flag(country)}</span>
-            <span className={styles.name}>{countryName(country)}</span>
+            <Link className={styles.name} href={`/${country.toLowerCase()}`}>{countryName(country)}</Link>
             <span className={`${styles.score} ${highlightedCountry === country ? styles.scoreFlash : ""}`} title={`${count.toLocaleString("en-US")} taps`}>
               {count.toLocaleString("en-US")}
             </span>
