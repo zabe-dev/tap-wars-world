@@ -4,13 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { countryCode, locationLabel } from "./countries";
 import { DeviceLocation, getDeviceLocation } from "./device-location";
 import { LocationConsent } from "./location-consent";
-import {
-  hasRememberedLocationConsent,
-  rememberedLocationConsentValue,
-} from "./location-consent-storage";
+import { readTapLocation, sameLocation, TAP_LOCATION_KEY } from "./tap-location-storage";
 import { getVisitorLocation } from "./visitor-location";
-
-const REMEMBER_KEY = "tapwars:location-consent-remembered";
 
 export function LocationStatus({ onResolved, onConsentDecision, onVerifyDecision, consentRequest = 0 }: {
   onResolved: (location: DeviceLocation) => void;
@@ -23,47 +18,49 @@ export function LocationStatus({ onResolved, onConsentDecision, onVerifyDecision
   const [result, setResult] = useState("");
   const [approximate, setApproximate] = useState("");
   const [consentOpen, setConsentOpen] = useState(false);
-  const [rememberChoice, setRememberChoice] = useState(false);
+  const approximatePlace = useRef<DeviceLocation | null>(null);
+  const initialized = useRef(false);
+  const callbacks = useRef({ onResolved, onConsentDecision });
+  callbacks.current = { onResolved, onConsentDecision };
   const [verifying, setVerifying] = useState(false);
   const busy = useRef(false);
 
   useEffect(() => {
+    let cancelled = false;
     void getVisitorLocation().then((place) => {
+      if (cancelled || initialized.current) return;
+      initialized.current = true;
+      approximatePlace.current = place;
       setApproximate(locationLabel(place.city, countryCode(place.country)));
+      let saved = null;
+      try { saved = readTapLocation(localStorage.getItem(TAP_LOCATION_KEY)); } catch { /* Storage is optional. */ }
+      if (saved && (place.country === "Worldwide" || sameLocation(saved.approximate, place))) {
+        callbacks.current.onResolved(saved.location);
+        callbacks.current.onConsentDecision?.();
+      } else setConsentOpen(true);
     });
+    return () => { cancelled = true; };
   }, []);
-
-	useEffect(() => {
-		try {
-			const savedDeviceLocation = localStorage.getItem("wc-device-location");
-			const remembered = Boolean(savedDeviceLocation) || hasRememberedLocationConsent(localStorage.getItem(REMEMBER_KEY));
-      if (!remembered) localStorage.removeItem(REMEMBER_KEY);
-      setConsentOpen(!remembered);
-      if (remembered) onConsentDecision?.();
-    } catch {
-      setConsentOpen(true);
-    }
-  }, [onConsentDecision]);
 
   useEffect(() => {
     if (consentRequest > 0) setConsentOpen(true);
   }, [consentRequest]);
 
-  function saveRememberChoice(remember: boolean) {
+  function selectLocation(location: DeviceLocation, source: "device" | "approximate") {
     try {
-      if (remember) localStorage.setItem(REMEMBER_KEY, rememberedLocationConsentValue());
-      else localStorage.removeItem(REMEMBER_KEY);
-    } catch {
-      /* The choice still applies until this page is closed. */
-    }
+      localStorage.setItem(TAP_LOCATION_KEY, JSON.stringify({ source, location, approximate: approximatePlace.current ?? location }));
+      localStorage.removeItem("wc-device-location");
+      localStorage.removeItem("wc-approximate-location");
+      localStorage.removeItem("tapwars:location-consent-remembered");
+    } catch { /* The choice still applies this visit. */ }
+    onResolved(location);
+    onConsentDecision?.();
   }
 
   async function confirmDecision() {
     setVerifying(true);
     try {
       await onVerifyDecision?.();
-      onConsentDecision?.();
-      saveRememberChoice(rememberChoice);
       return true;
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Verification failed. Please try again.");
@@ -74,7 +71,9 @@ export function LocationStatus({ onResolved, onConsentDecision, onVerifyDecision
   }
 
   async function dismissConsent() {
+    if (!approximatePlace.current) return;
     if (!await confirmDecision()) return;
+    selectLocation(approximatePlace.current, "approximate");
     setConsentOpen(false);
   }
 
@@ -94,7 +93,7 @@ export function LocationStatus({ onResolved, onConsentDecision, onVerifyDecision
     setResult("");
     try {
       const place = await getDeviceLocation(navigator.geolocation);
-      onResolved(place);
+      selectLocation(place, "device");
       setResult("");
       return true;
     } catch (reason) {
@@ -112,8 +111,6 @@ export function LocationStatus({ onResolved, onConsentDecision, onVerifyDecision
     result={result}
     error={error}
     approximate={approximate}
-    rememberChoice={rememberChoice}
-    onRememberChange={setRememberChoice}
     onDismiss={dismissConsent}
     onClose={closeConsent}
     verifying={verifying}

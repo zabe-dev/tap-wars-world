@@ -63,12 +63,6 @@ export function Counter({ scope }: { scope?: string } = {}) {
 	const sorted = useMemo(() => Object.entries(counts).sort((a, b) => b[1] - a[1]), [counts]);
 
 	useEffect(() => {
-		try {
-			const savedDevice = JSON.parse(localStorage.getItem("wc-device-location") ?? "null") as DeviceLocation | null;
-			if (savedDevice?.country && savedDevice.city) {
-				setDeviceLocation(savedDevice);
-			}
-		} catch { /* Ignore malformed saved locations. */ }
 		void getVisitorLocation().then((location) => {
 			const code = countryCode((tapLocation.current ?? deviceLocation ?? location).country);
 			setVisitorCountry(code);
@@ -202,7 +196,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 				body: JSON.stringify({
 					tapNonce: nonce,
 					...(tapLocation.current?.ip ? { ip: tapLocation.current.ip } : {}),
-					...(deviceLocation ? { deviceLocation } : {}),
+					...(tapLocation.current ? { deviceLocation: tapLocation.current } : {}),
 					anonymous,
 					...(scope ? { scope } : {}),
 				}),
@@ -212,7 +206,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 				await response.json();
 			const nextCounts = scope ? Object.fromEntries((data.regionalRanking ?? []).map((entry) => [entry.region, entry.count])) : toCounts(data.ranking);
 			const country = countryCode(data.country);
-			const ownLocation = deviceLocation ?? { city: data.city, country: data.country };
+			const ownLocation = displayLocation;
 			if (!data.accepted) {
 				showToast([ownLocation.city, countryCode(ownLocation.country)], true);
 				return;
@@ -324,9 +318,9 @@ export function Counter({ scope }: { scope?: string } = {}) {
 			</div>
 			{milestone && <MilestoneConfetti key={milestone.tapTotal} onComplete={() => setMilestone(null)} />}
 			<LocationStatus consentRequest={consentRequest} onConsentDecision={markConsentDecided} onResolved={(place) => {
+				if (tapLocation.current) return;
 				setDeviceLocation(place);
-				if (!tapLocation.current) tapLocation.current = place;
-				try { localStorage.setItem("wc-device-location", JSON.stringify(place)); } catch { /* Optional cache. */ }
+				tapLocation.current = place;
 				setVisitorCountry(countryCode(place.country));
 			}} />
 			<TurnstileWidget ref={turnstile} />

@@ -352,3 +352,9 @@
 
 - [x] Add a top-right close button and backdrop dismissal
 - [x] Lock page scrolling while the modal is open
+## 2026-10-01 — Stable saved tap location
+
+- [x] Save selected location/source and approximate visit reference together
+- [x] Ask again only when no saved choice exists or a later visit's IP estimate changes
+- [x] Send the selected city/country on every tap; keep the session location fixed
+- [x] Remove the modal's obsolete weekly remember checkbox

@@ -5,7 +5,7 @@ import { Icon } from "@iconify/react";
 import { motion, useReducedMotion } from "motion/react";
 import styles from "./location-consent.module.css";
 
-export function LocationConsent({ open, onAllow, onDismiss, onClose, pending = false, verifying = false, result = "", error = "", approximate = "", rememberChoice = false, onRememberChange }: {
+export function LocationConsent({ open, onAllow, onDismiss, onClose, pending = false, verifying = false, result = "", error = "", approximate = "" }: {
   open: boolean;
   onAllow: () => void;
   onDismiss: () => void;
@@ -15,8 +15,6 @@ export function LocationConsent({ open, onAllow, onDismiss, onClose, pending = f
   result?: string;
   error?: string;
   approximate?: string;
-  rememberChoice?: boolean;
-  onRememberChange?: (remember: boolean) => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const reducedMotion = useReducedMotion();
@@ -59,11 +57,6 @@ export function LocationConsent({ open, onAllow, onDismiss, onClose, pending = f
         <p className={styles.current}><span>Approximate location</span><strong>{approximate || "Detecting…"}</strong><small>Based on your IP address. No permission needed.</small></p>
         <p id="location-consent-description">Your approximate location comes from your public IP geolocation. You can choose to share your device location for more accurate data.</p>
         <p className={styles.disclosure}>Your coordinates go directly to <a href="https://www.bigdatacloud.com/" target="_blank" rel="nofollow noreferrer">BigDataCloud</a> to identify the location of your device. We do not receive these coordinates or use them for country scores.</p>
-        <label className={styles.remember}>
-          <input type="checkbox" checked={rememberChoice} onChange={(event) => onRememberChange?.(event.target.checked)} />
-          <span className={styles.checkmark} aria-hidden="true"><Icon icon="lucide:check" /></span>
-          <span>Remember my choice for 7 days</span>
-        </label>
       </>}
       {error && <p className={styles.error} role="alert">{error}</p>}
       <div className={styles.actions}>
