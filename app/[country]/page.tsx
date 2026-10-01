@@ -1,4 +1,5 @@
 import { Counter } from "../_components/counter";
+import { notFound } from "next/navigation";
 
 const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 const COUNTRY_CODES = Array.from({ length: 26 }, (_, first) => Array.from({ length: 26 }, (_, second) => `${String.fromCharCode(65 + first)}${String.fromCharCode(65 + second)}`)).flat();
@@ -9,6 +10,6 @@ export function generateStaticParams() {
 
 export default async function CountryPage({ params }: { params: Promise<{ country: string }> }) {
 	const country = (await params).country.toLowerCase();
-	if (!/^[a-z]{2}$/.test(country)) return null;
+	if (!/^[a-z]{2}$/.test(country) || !regionNames.of(country.toUpperCase()) || regionNames.of(country.toUpperCase()) === country.toUpperCase()) notFound();
 	return <Counter scope={country.toUpperCase()} />;
 }
