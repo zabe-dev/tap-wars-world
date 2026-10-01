@@ -49,8 +49,9 @@ export function Ranking({ ranking, loading, highlightedCountry, countryFlag }: {
           })()}
           </li>
         ))}
+        {!loading && countries.length === 0 && <li className={styles.emptyRow}>No data to display.</li>}
       </ol>
-      {!loading && countries.length === 0 && <p className={styles.empty}>{countryFlag ? "No data to display." : "Country rankings appear when location is available."}</p>}
+      {!loading && countries.length === 0 && !countryFlag && <p className={styles.empty}>Country rankings appear when location is available.</p>}
     </section>
   );
 }

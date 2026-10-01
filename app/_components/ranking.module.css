@@ -17,9 +17,11 @@
 @media (prefers-reduced-motion: reduce) { .scoreFlash { animation: none; color: var(--hot); } }
 .empty { color: var(--mute); font-size: 13px; }
 .loadingRow { display: grid; grid-column: 1 / -1; height: 100%; place-items: center; border-bottom: 0; color: var(--mute); }
+.emptyRow { display: grid; grid-column: 1 / -1; min-height: 576px; place-items: center; border-bottom: 0 !important; color: var(--mute); font-size: 13px; }
 @media (min-width: 700px) {
   .list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .list.loading { height: 296px; }
   .list li:nth-last-child(2) { border-bottom: 0; }
   .loadingRow { min-height: 280px; }
+  .emptyRow { min-height: 280px; }
 }
