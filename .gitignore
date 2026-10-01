@@ -7,4 +7,3 @@ node_modules/
 .playwright-mcp/
 
 # Local GeoIP database
-data/GeoLite2-City.mmdb

@@ -81,7 +81,7 @@ const tapInput = locationInput.extend({
   tapNonce: z.string().regex(/^[a-f0-9]{48}$/),
   anonymous: z.boolean().default(false),
   scope: z.string().regex(/^[A-Z]{2}$/).optional(),
-  deviceLocation: z.object({ country: z.string().trim().min(1).max(200), city: z.string().trim().max(200), region: z.string().trim().max(200).optional() }).strict().optional(),
+  deviceLocation: z.object({ country: z.string().trim().min(1).max(200), city: z.string().trim().max(200) }).strict().optional(),
 }).strict();
 
 app.use("/location", async (context, next) => {

@@ -5,7 +5,6 @@ const placeSchema = z.object({
   countryCode: z.string().regex(/^[A-Z]{2}$/),
   city: z.string().trim().max(200).optional(),
   locality: z.string().trim().max(200).optional(),
-  principalSubdivision: z.string().trim().max(200).optional(),
 });
 const coordinatesSchema = z.object({
   latitude: z.number().min(-90).max(90),
@@ -15,7 +14,7 @@ const regions = new Intl.DisplayNames(["en"], { type: "region" });
 const TIMEOUT = 8000;
 const COOLDOWN = 30_000;
 
-export type DeviceLocation = { city: string; country: string; region?: string };
+export type DeviceLocation = { city: string; country: string };
 
 function hasUsableCity(city?: string) {
   return Boolean(city && !["unknown", "location unknown", "n/a", "na", "-"].includes(city.trim().toLowerCase()));
@@ -42,7 +41,7 @@ export async function resolveDeviceLocation(geolocation: Geolocation, request: t
   const country = regions.of(place.countryCode);
   const city = [place.city, place.locality].find(hasUsableCity) || countryCapital(place.countryCode);
   if (!country || country === place.countryCode || !city) throw new Error("No city was found for this location.");
-  return { city, country, region: place.principalSubdivision };
+  return { city, country };
 }
 
 /** Limit explicit device lookups to one attempt per 30 seconds; never auto-retry. */
