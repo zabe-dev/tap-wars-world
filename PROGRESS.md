@@ -1,3 +1,7 @@
+## 2026-10-03 — Small-screen header and footer sizing
+
+- [x] Reduce the logo, top-page controls, and footer text spacing on small devices
+
 ## 2026-09-30 — SEO foundation
 
 - [x] Add canonical metadata, social cards, robots directives, and JSON-LD

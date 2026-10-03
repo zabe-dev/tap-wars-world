@@ -8,4 +8,5 @@
 .logoButton:focus-visible { outline: 2px solid var(--hot); outline-offset: 4px; border-radius: 50%; }
 @keyframes logo-ring { 0% { opacity: .9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.8); } }
 @media (max-width: 600px) { .topbar { gap: 10px; padding-top: 18px; } }
+@media (max-width: 600px) { .brand img { width: 34px; height: 34px; border-radius: 9px; } }
 .link:focus-visible { outline: 2px solid var(--hot); outline-offset: 4px; border-radius: 13px; }
