@@ -1,3 +1,7 @@
+## 2026-10-03 — Anonymous tap disclosure
+
+- [x] Explain that low activity can still reveal a tap's approximate source
+
 ## 2026-10-03 — Turnstile-aware tap cue
 
 - [x] Show the tap cue after Turnstile and tap-session initialization
