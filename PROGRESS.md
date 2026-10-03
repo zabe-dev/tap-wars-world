@@ -6,7 +6,7 @@
 ## 2026-10-03 — Remove dummy tap data
 
 - [x] Remove seeded world and regional totals
-- [x] Add guarded `db:clear-taps` reset command
+- [x] Add `db:reset-data` reset command
 
 ## 2026-10-03 — Small-screen header and footer sizing
 

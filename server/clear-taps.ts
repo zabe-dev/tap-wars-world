@@ -6,10 +6,6 @@ if (!connectionString) {
 	throw new Error("DATABASE_URL is required.");
 }
 
-if (process.env.CONFIRM_CLEAR_TAPS !== "1") {
-	throw new Error("Set CONFIRM_CLEAR_TAPS=1 to clear all tap data.");
-}
-
 const client = postgres(connectionString);
 
 try {
