@@ -1,12 +1,11 @@
 import { asc, desc, sql } from "drizzle-orm";
 import { db } from "./db";
 import { countryCounts } from "./db/schema";
-import { WORLD_SEEDS } from "./seed-data";
 
 /** One country and its accumulated tap count. */
 export type RankingEntry = { country: string; count: number };
 
-const counts = new Map<string, number>(WORLD_SEEDS);
+const counts = new Map<string, number>();
 
 /** Increment one country and return the current sorted global ranking. */
 export function recordTap(country: string, points = 1): RankingEntry[] {
@@ -21,18 +20,6 @@ export function getRanking(): RankingEntry[] {
 		.sort((a, b) => b.count - a.count || a.country.localeCompare(b.country));
 }
 
-let databaseReady: Promise<void> | null = null;
-
-async function ensureDatabase(database: NonNullable<typeof db>) {
-	if (counts.size > 0) {
-		databaseReady ??= database.insert(countryCounts)
-			.values([...counts.entries()].map(([country, tapCount]) => ({ country, tapCount })))
-			.onConflictDoNothing()
-			.then(() => undefined);
-	}
-	await databaseReady;
-}
-
 /** Read durable totals when PostgreSQL is configured, otherwise use the local fallback. */
 export async function getStoredRanking(): Promise<RankingEntry[]> {
 	if (!db) {
@@ -40,7 +27,6 @@ export async function getStoredRanking(): Promise<RankingEntry[]> {
 		return getRanking();
 	}
 	try {
-		await ensureDatabase(db);
 		const rows = await db.select().from(countryCounts)
 			.orderBy(desc(countryCounts.tapCount), asc(countryCounts.country));
 		return rows.map((row) => ({ country: row.country, count: row.tapCount }));
@@ -57,7 +43,6 @@ export async function recordStoredTap(country: string, points = 1): Promise<Rank
 		return recordTap(country, points);
 	}
 	try {
-		await ensureDatabase(db);
 		if (points > 0) {
 			await db.insert(countryCounts).values({ country, tapCount: points, updatedAt: new Date() })
 				.onConflictDoUpdate({

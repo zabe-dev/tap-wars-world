@@ -17,8 +17,9 @@ type TurnstileApi = {
 declare global { interface Window { turnstile?: TurnstileApi } }
 
 export type TurnstileHandle = { getToken: () => Promise<string>; reset: () => void };
+type TurnstileWidgetProps = { onReady?: () => void };
 
-export const TurnstileWidget = forwardRef<TurnstileHandle>(function TurnstileWidget(_, ref) {
+export const TurnstileWidget = forwardRef<TurnstileHandle, TurnstileWidgetProps>(function TurnstileWidget({ onReady }, ref) {
 	const container = useRef<HTMLDivElement>(null);
 	const widgetId = useRef<string | null>(null);
 	const ready = useRef<Promise<void> | null>(null);
@@ -51,6 +52,7 @@ export const TurnstileWidget = forwardRef<TurnstileHandle>(function TurnstileWid
 			resolveReady.current?.();
 			resolveReady.current = null;
 			rejectReady.current = null;
+			onReady?.();
 		} catch {
 			rejectReady.current?.(new Error("Bot verification could not load."));
 			rejectReady.current = null;

@@ -56,7 +56,10 @@ export function Counter({ scope }: { scope?: string } = {}) {
 	const [consentRequest, setConsentRequest] = useState(0);
 	const [tapToken, setTapToken] = useState<string | null>(null);
 	const [tapSessionReady, setTapSessionReady] = useState(false);
+	const [turnstileReady, setTurnstileReady] = useState(false);
+	const [tapGuideVisible, setTapGuideVisible] = useState(false);
 	const turnstile = useRef<TurnstileHandle>(null);
+	const tapGuideTimer = useRef<number | null>(null);
 	const verifiedSession = useRef(false);
 	const verificationAttempt = useRef<Promise<void> | null>(null);
 	const [sharedBattle, setSharedBattle] = useState<SharedBattle>(null);
@@ -69,6 +72,14 @@ export function Counter({ scope }: { scope?: string } = {}) {
 	const soundStep = useRef(0);
 	const clientId = useRef(Math.random().toString(36).slice(2));
 	const sorted = useMemo(() => Object.entries(counts).sort((a, b) => b[1] - a[1]), [counts]);
+
+	useEffect(() => {
+		if (turnstileReady && tapSessionReady) setTapGuideVisible(true);
+	}, [tapSessionReady, turnstileReady]);
+
+	useEffect(() => () => {
+		if (tapGuideTimer.current) window.clearTimeout(tapGuideTimer.current);
+	}, []);
 
 	useEffect(() => {
 		void getVisitorLocation().then((location) => {
@@ -208,6 +219,9 @@ export function Counter({ scope }: { scope?: string } = {}) {
 			return;
 		}
 		if (rankingLoading || !tapToken || (requiresTapVerification && !tapSessionReady)) return;
+		setTapGuideVisible(false);
+		if (tapGuideTimer.current) window.clearTimeout(tapGuideTimer.current);
+		tapGuideTimer.current = window.setTimeout(() => setTapGuideVisible(true), 3000);
 		setTapError(null);
 		if (!muted) beep();
 		if (!quiet) {
@@ -350,7 +364,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 						aria-label={`Add your tap to tapwars.world. ${Math.max(0, nextMilestone(total) - total).toLocaleString("en-US")} taps remaining to the next milestone.`}
 					>
 						<span className={styles.tapLabel}>TAP</span>
-						{!buttonPressed && <Icon className={styles.tapGuide} icon="at-icons:tap" aria-hidden="true" />}
+						{tapGuideVisible && !buttonPressed && <Icon className={`${styles.tapGuide} ${styles.tapGuideVisible}`} icon="at-icons:tap" aria-hidden="true" />}
 					</button>
 				</div>
 				<p className={`${styles.error} ${tapError ? styles.errorVisible : ""}`} role="alert" aria-live="polite">
@@ -367,7 +381,7 @@ export function Counter({ scope }: { scope?: string } = {}) {
 				setVisitorCountry(countryCode(place.country));
 				setVisitorCity(place.city);
 			}} />
-			<TurnstileWidget ref={turnstile} />
+			<TurnstileWidget ref={turnstile} onReady={() => setTurnstileReady(true)} />
 		</main>
 	);
 }

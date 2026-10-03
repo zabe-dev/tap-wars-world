@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "sh -c 'if [ -n \"$DATABASE_URL\" ]; then bun run db:migrate; fi; exec next start'",
     "db:migrate": "drizzle-kit migrate",
+    "db:clear-taps": "bun server/clear-taps.ts",
     "test": "bun test"
   },
   "dependencies": {

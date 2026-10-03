@@ -1,3 +1,13 @@
+## 2026-10-03 — Turnstile-aware tap cue
+
+- [x] Show the tap cue after Turnstile and tap-session initialization
+- [x] Hide it on tap and restore it after three seconds of inactivity
+
+## 2026-10-03 — Remove dummy tap data
+
+- [x] Remove seeded world and regional totals
+- [x] Add guarded `db:clear-taps` reset command
+
 ## 2026-10-03 — Small-screen header and footer sizing
 
 - [x] Reduce the logo, top-page controls, and footer text spacing on small devices
