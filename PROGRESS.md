@@ -1,6 +1,7 @@
 ## 2026-10-03 — Small-screen header and footer sizing
 
 - [x] Reduce the logo, top-page controls, and footer text spacing on small devices
+- [x] Keep the brand name on one line at narrow mobile widths
 
 ## 2026-09-30 — SEO foundation
 
