@@ -15,7 +15,6 @@
 .scoreFlash { display: inline-block; animation: score-flash .7s ease-out; }
 @keyframes score-flash { 0%, 100% { color: var(--ink); font-size: 14px; } 25%, 65% { color: var(--hot); font-size: 17px; } }
 @media (prefers-reduced-motion: reduce) { .scoreFlash { animation: none; color: var(--hot); } }
-.empty { color: var(--mute); font-size: 13px; }
 .loadingRow { display: grid; grid-column: 1 / -1; height: 100%; place-items: center; border-bottom: 0; color: var(--mute); }
 .emptyRow { display: grid; grid-column: 1 / -1; min-height: 576px; place-items: center; border-bottom: 0 !important; color: var(--mute); font-size: 13px; }
 @media (min-width: 700px) {
